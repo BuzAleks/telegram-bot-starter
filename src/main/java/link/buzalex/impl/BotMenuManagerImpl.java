@@ -1,9 +1,7 @@
 package link.buzalex.impl;
 
-import link.buzalex.api.BotMenuSectionHandler;
-import link.buzalex.api.BotMenuStepsHolder;
-import link.buzalex.api.UserContextInitializer;
-import link.buzalex.api.UserContextStorage;
+import link.buzalex.api.*;
+import link.buzalex.models.BotActions;
 import link.buzalex.models.BotMessage;
 import link.buzalex.models.UserContext;
 import org.slf4j.Logger;
@@ -16,9 +14,11 @@ import java.util.Map;
 public class BotMenuManagerImpl implements link.buzalex.api.BotMenuManager {
     private static final Logger LOG = LoggerFactory.getLogger(BotMenuManagerImpl.class);
 
-    public static final String START_STEP = "START";
+    public static final String START_POSITION = "BOT_MENU_START_POSITION";
 
     private final UserContextStorage<? super UserContext> userContextStorage;
+
+    private final BotMenuStepProcessor stepProcessor;
 
     private final UserContextInitializer<? super UserContext> userContextInitializer;
 
@@ -26,8 +26,9 @@ public class BotMenuManagerImpl implements link.buzalex.api.BotMenuManager {
 
     private final Map<String, BotMenuSectionHandler<? super UserContext>> menuHandlers;
 
-    public BotMenuManagerImpl(UserContextStorage<? super UserContext> userContextStorage, UserContextInitializer<? super UserContext> userContextInitializer, BotMenuStepsHolder stepsHolder, Map<String, BotMenuSectionHandler<? super UserContext>> menuHandlers) {
+    public BotMenuManagerImpl(UserContextStorage<? super UserContext> userContextStorage, BotMenuStepProcessor stepProcessor, UserContextInitializer<? super UserContext> userContextInitializer, BotMenuStepsHolder stepsHolder, Map<String, BotMenuSectionHandler<? super UserContext>> menuHandlers) {
         this.userContextStorage = userContextStorage;
+        this.stepProcessor = stepProcessor;
         this.userContextInitializer = userContextInitializer;
         this.stepsHolder = stepsHolder;
         this.menuHandlers = menuHandlers;
@@ -41,23 +42,26 @@ public class BotMenuManagerImpl implements link.buzalex.api.BotMenuManager {
         LOG.info("Got message: " + message.text());
 
         UserContext user = userContextStorage.getUser(message.userId());
-        if (user == null) {
-            user = userContextInitializer.initUser(message);
-        } else if (START_STEP.equals(user.getCurrentMenuSection())) {
+        user = user == null ? userContextInitializer.initUser(message) : user;
+
+        if (START_POSITION.equals(user.getCurrentMenuSection())) {
+            Integer minOrder = null;
             for (Map.Entry<String, BotMenuSectionHandler<? super UserContext>> handler : menuHandlers.entrySet()) {
                 if (handler.getValue().enterCondition(message, user)) {
-                    user.setCurrentMenuSection(handler.getKey());
+                    if (minOrder == null || handler.getValue().order() < minOrder) {
+                        minOrder = handler.getValue().order();
+                        user.setCurrentMenuSection(handler.getKey());
+                    }
                 }
             }
         }
         final BotMenuSectionHandler<? super UserContext> botMenuSectionHandler = menuHandlers.get(user.getCurrentMenuSection());
-        LOG.info("Got menu handler: " + botMenuSectionHandler.getClass().getName());
-        if (START_STEP.equals(user.getCurrentStep())) {
-            botMenuSectionHandler.startStep(message, user);
-        } else {
-            stepsHolder.getStep(user.getCurrentMenuSection(), user.getCurrentStep()).accept(message, user);
-        }
-
+        LOG.info("Chosen menu handler: " + botMenuSectionHandler.getClass().getName());
+        stepProcessor.beforeStepExecution(message, user);
+        final BotActions botActions = START_POSITION.equals(user.getCurrentStep()) ?
+                botMenuSectionHandler.startStep(message, user) :
+                stepsHolder.getStep(user.getCurrentMenuSection(), user.getCurrentStep()).apply(message, user);
+        stepProcessor.afterStepExecution(message, user, botActions);
         userContextStorage.saveUser(user);
     }
 }

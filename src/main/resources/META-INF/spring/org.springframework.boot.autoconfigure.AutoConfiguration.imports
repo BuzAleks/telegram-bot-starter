@@ -1,1 +1,2 @@
 link.buzalex.configuration.TelegramBotAutoConfiguration
+org.telegram.telegrambots.starter.TelegramBotStarterConfiguration

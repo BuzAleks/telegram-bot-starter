@@ -8,6 +8,7 @@ public class UserContext {
     private final Map<String, String> data = new HashMap<>();
     private String currentMenuSection;
     private String currentStep;
+    private BotActions actions;
 
     public Long getId() {
         return id;
@@ -39,5 +40,13 @@ public class UserContext {
 
     public void setCurrentStep(String currentStep) {
         this.currentStep = currentStep;
+    }
+
+    public BotActions getActions() {
+        return actions;
+    }
+
+    public void setActions(BotActions actions) {
+        this.actions = actions;
     }
 }

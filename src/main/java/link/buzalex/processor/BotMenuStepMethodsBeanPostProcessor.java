@@ -4,6 +4,7 @@ import link.buzalex.api.BotMenuStepsHolder;
 import link.buzalex.api.BotMenuSectionHandler;
 import link.buzalex.exception.BotMenuStepMethodException;
 import link.buzalex.impl.BotMenuManagerImpl;
+import link.buzalex.models.BotActions;
 import link.buzalex.models.BotMessage;
 import link.buzalex.models.UserContext;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 @Component
 public class BotMenuStepMethodsBeanPostProcessor implements BeanPostProcessor {
@@ -57,14 +59,14 @@ public class BotMenuStepMethodsBeanPostProcessor implements BeanPostProcessor {
                     throw new BotMenuStepMethodException("Step method 2 parameter should be UserContext");
                 }
 
-                BiConsumer<BotMessage, ? super UserContext> consumer = (BiConsumer<BotMessage, UserContext>) (botMessage, userContext) -> {
+                BiFunction<BotMessage, ? super UserContext, BotActions> function = (botMessage, userContext) -> {
                     try {
-                        method.invoke(bean, botMessage, userContext);
+                        return (BotActions) method.invoke(bean, botMessage, userContext);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new BotMenuStepMethodException("Something went wrong while menu step invocation", e);
                     }
                 };
-                stepsHolder.putStep(beanName, entry.getKey(), consumer);
+                stepsHolder.putStep(beanName, entry.getKey(), function);
                 LOG.info("Method added as menu step: "+ entry.getKey()+" for bean: "+beanName);
             });
         }
