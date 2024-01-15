@@ -1,14 +1,23 @@
 package link.buzalex.models;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
 public class UserContext {
     private Long id;
-    private final Map<String, String> data = new HashMap<>();
-    private String currentMenuSection;
-    private String currentStep;
-    private BotActions actions;
+    private Map<String, String> data = new HashMap<>();
+    private String menuSection;
+    private Deque<String> menuSteps = new ArrayDeque<>();
+
+    public UserContext() {
+    }
+
+    public UserContext(Long id, String menuSection) {
+        this.id = id;
+        this.menuSection = menuSection;
+    }
 
     public Long getId() {
         return id;
@@ -26,27 +35,23 @@ public class UserContext {
         data.put(key, value);
     }
 
-    public String getCurrentMenuSection() {
-        return currentMenuSection;
+    public String getMenuSection() {
+        return menuSection;
     }
 
-    public void setCurrentMenuSection(String currentMenuSection) {
-        this.currentMenuSection = currentMenuSection;
+    public void setMenuSection(String menuSection) {
+        this.menuSection = menuSection;
     }
 
-    public String getCurrentStep() {
-        return currentStep;
+    public Deque<String> getMenuSteps() {
+        return menuSteps;
     }
 
-    public void setCurrentStep(String currentStep) {
-        this.currentStep = currentStep;
+    public void setMenuSteps(Deque<String> menuSteps) {
+        this.menuSteps = menuSteps;
     }
 
-    public BotActions getActions() {
-        return actions;
-    }
-
-    public void setActions(BotActions actions) {
-        this.actions = actions;
+    public void setData(Map<String, String> data) {
+        this.data = data;
     }
 }

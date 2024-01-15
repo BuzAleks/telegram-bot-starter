@@ -18,6 +18,7 @@ public class BotApiServiceImpl implements BotApiService {
 
     @Override
     public void sendToUser(String message, Long id, String parseMode) {
+
         executor.accept(SendMessage.builder()
                 .text(message)
                 .chatId(id)

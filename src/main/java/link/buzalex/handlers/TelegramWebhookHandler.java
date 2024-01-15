@@ -5,7 +5,7 @@ import link.buzalex.api.BotMessageConverter;
 import link.buzalex.api.ExceptionHandler;
 import link.buzalex.configuration.TelegramBotProperties;
 import link.buzalex.exception.BotApiServiceException;
-import link.buzalex.impl.BotMenuManagerImpl;
+import link.buzalex.impl.BotMenuUserManagerImpl;
 import link.buzalex.models.BotMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +22,14 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class TelegramWebhookHandler extends TelegramWebhookBot {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramWebhookHandler.class);
 
-    private final BotMenuManagerImpl menuManager;
+    private final BotMenuUserManagerImpl menuManager;
     private final ExceptionHandler exceptionHandler;
     private final BotMessageConverter messageMapper;
     private final TelegramBotProperties properties;
 
     public TelegramWebhookHandler(
             TelegramBotProperties properties,
-            BotMenuManagerImpl menuManager,
+            BotMenuUserManagerImpl menuManager,
             ExceptionHandler exceptionHandler,
             BotMessageConverter messageMapper,
             BotApiService apiService) throws TelegramApiException {

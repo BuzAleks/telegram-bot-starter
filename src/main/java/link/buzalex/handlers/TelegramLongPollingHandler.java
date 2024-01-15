@@ -5,7 +5,7 @@ import link.buzalex.api.BotMessageConverter;
 import link.buzalex.api.ExceptionHandler;
 import link.buzalex.configuration.TelegramBotProperties;
 import link.buzalex.exception.BotApiServiceException;
-import link.buzalex.impl.BotMenuManagerImpl;
+import link.buzalex.impl.BotMenuUserManagerImpl;
 import link.buzalex.models.BotMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +27,14 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
         options.setMaxThreads(4);
     }
 
-    private final BotMenuManagerImpl menuManager;
+    private final BotMenuUserManagerImpl menuManager;
     private final ExceptionHandler exceptionHandler;
     private final BotMessageConverter messageMapper;
     private final TelegramBotProperties properties;
 
     public TelegramLongPollingHandler(
             TelegramBotProperties properties,
-            BotMenuManagerImpl menuManager,
+            BotMenuUserManagerImpl menuManager,
             ExceptionHandler exceptionHandler,
             BotMessageConverter messageMapper,
             BotApiService apiService) {

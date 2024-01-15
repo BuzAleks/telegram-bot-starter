@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class BotMessageConverterImpl implements BotMessageConverter {
     @Override
     public BotMessage convert(Update update) {
+        // TODO: 16.01.2024 define more converters for message
 
         if (update.hasMessage() && update.getMessage().hasText()) {
             final Message message = update.getMessage();
