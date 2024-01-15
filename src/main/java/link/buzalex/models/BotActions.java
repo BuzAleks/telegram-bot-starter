@@ -2,6 +2,7 @@ package link.buzalex.models;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public record BotActions(
@@ -9,7 +10,9 @@ public record BotActions(
         Map<Long, List<BotMessageReply>> replies,
         List<BotActionsBuilder.ConditionalActions> conditionalActions,
         List<Consumer<BotMessage>> peeks,
-        String paramName
+        String paramName,
+        BiFunction<BotMessage, ? super UserContext, BotActions> nextStepFunc,
+        boolean finish
 ) {
     public static BotActionsBuilder builder() {
         return new BotActionsBuilder();

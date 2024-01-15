@@ -4,23 +4,36 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class BotActionsBuilder {
     String nextStep;
+    BiFunction<BotMessage, ? super UserContext, BotActions> nextStepFunc;
     Map<Long, List<BotMessageReply>> replies = new HashMap<>();
     List<ConditionalActions> conditionalActions = new ArrayList<>();
     List<Consumer<BotMessage>> peeks = new ArrayList<>();
     String paramName;
+    boolean finish;
 
     public BotActionsBuilder nextStep(String stepName) {
         this.nextStep = stepName;
         return this;
     }
 
+    public BotActionsBuilder finish() {
+        this.finish = true;
+        return this;
+    }
+
+    public BotActionsBuilder nextStep(BiFunction<BotMessage, ? super UserContext, BotActions> stepName) {
+        this.nextStepFunc = stepName;
+        return this;
+    }
+
     public BotActionsBuilder message(BotMessageReply message) {
-        this.replies.computeIfAbsent(null, s -> new ArrayList<>()).add(message);
+        this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
         return this;
     }
 
@@ -28,13 +41,13 @@ public class BotActionsBuilder {
         return this.message(new BotMessageReply(message));
     }
 
-    public BotActionsBuilder messageTo(BotMessageReply message, Long userId) {
+    public BotActionsBuilder message(BotMessageReply message, Long userId) {
         this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(message);
         return this;
     }
 
-    public BotActionsBuilder messageTo(String message, Long userId) {
-        return this.messageTo(new BotMessageReply(message), userId);
+    public BotActionsBuilder message(String message, Long userId) {
+        return this.message(new BotMessageReply(message), userId);
     }
 
     public GotAnswer gotAnswer() {
@@ -43,7 +56,7 @@ public class BotActionsBuilder {
 
     public BotActions build() {
         return new BotActions(
-                nextStep, replies, conditionalActions, peeks, paramName
+                nextStep, replies, conditionalActions, peeks, paramName, nextStepFunc, finish
         );
     }
 
@@ -68,6 +81,11 @@ public class BotActionsBuilder {
         Predicate<BotMessage> condition;
         String nextStep;
         Map<Long, List<BotMessageReply>> replies = new HashMap<>();
+        boolean finish;
+
+        public boolean isFinish() {
+            return finish;
+        }
 
         public Predicate<BotMessage> getCondition() {
             return condition;
@@ -90,8 +108,13 @@ public class BotActionsBuilder {
             return this;
         }
 
+        public ConditionalActions finish() {
+            this.finish = true;
+            return this;
+        }
+
         public ConditionalActions message(BotMessageReply message) {
-            this.replies.computeIfAbsent(null, s -> new ArrayList<>()).add(message);
+            this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
             return this;
         }
 
@@ -99,13 +122,13 @@ public class BotActionsBuilder {
             return this.message(new BotMessageReply(message));
         }
 
-        public ConditionalActions messageTo(BotMessageReply message, Long userId) {
+        public ConditionalActions message(BotMessageReply message, Long userId) {
             this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(message);
             return this;
         }
 
-        public ConditionalActions messageTo(String message, Long userId) {
-            return this.messageTo(new BotMessageReply(message), userId);
+        public ConditionalActions message(String message, Long userId) {
+            return this.message(new BotMessageReply(message), userId);
         }
 
         public GotAnswer also() {

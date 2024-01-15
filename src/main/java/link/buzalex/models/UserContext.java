@@ -2,13 +2,35 @@ package link.buzalex.models;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 public class UserContext {
     private Long id;
-    private final Map<String, String> data = new HashMap<>();
+    private Map<String, String> data = new HashMap<>();
     private String currentMenuSection;
     private String currentStep;
     private BotActions actions;
+    private BiFunction<BotMessage, ? super UserContext, BotActions> stepFunc;
+
+
+    public UserContext() {
+    }
+
+    public UserContext(Long id, String currentMenuSection, String currentStep, BotActions actions, BiFunction<BotMessage, ? super UserContext, BotActions> stepFunc) {
+        this.id = id;
+        this.currentMenuSection = currentMenuSection;
+        this.currentStep = currentStep;
+        this.actions = actions;
+        this.stepFunc = stepFunc;
+    }
+
+    public BiFunction<BotMessage, ? super UserContext, BotActions> getStepFunc() {
+        return stepFunc;
+    }
+
+    public void setStepFunc(BiFunction<BotMessage, ? super UserContext, BotActions> stepFunc) {
+        this.stepFunc = stepFunc;
+    }
 
     public Long getId() {
         return id;
@@ -48,5 +70,9 @@ public class UserContext {
 
     public void setActions(BotActions actions) {
         this.actions = actions;
+    }
+
+    public void setData(Map<String, String> data) {
+        this.data = data;
     }
 }

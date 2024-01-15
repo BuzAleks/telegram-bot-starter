@@ -4,9 +4,10 @@ import link.buzalex.api.BotMenuSectionHandler;
 import link.buzalex.models.BotActions;
 import link.buzalex.models.BotMessage;
 import link.buzalex.models.UserContext;
-import link.buzalex.processor.BotMenuStep;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Component
 @ConditionalOnMissingBean(value = BotMenuSectionHandler.class, ignored = ExampleGreetingBotMenuSectionHandler.class)
@@ -23,16 +24,20 @@ public class ExampleGreetingBotMenuSectionHandler implements BotMenuSectionHandl
         return BotActions.builder()
                 .message("What's your name?")
                 .gotAnswer()
+                .ifTrue(mes -> Objects.equals(mes.text(), "Пидар"))
+                .message("Сам пидор")
+                .finish()
+                .also()
+                .peek(mes -> System.out.println(mes.chatId()))
                 .saveAs("name")
-                .nextStep(GREETING_STEP)
+                .nextStep(this::nextStep)
                 .build();
     }
 
-    @BotMenuStep(GREETING_STEP)
     public BotActions nextStep(BotMessage botMessage, UserContext userContext) {
         return BotActions.builder()
                 .message("Hello, " + userContext.getData().get("name") + "!")
-                .nextStep(BotMenuManagerImpl.START_POSITION)
+                .finish()
                 .build();
     }
 }

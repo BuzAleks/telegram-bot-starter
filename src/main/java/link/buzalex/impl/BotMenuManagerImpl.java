@@ -6,6 +6,7 @@ import link.buzalex.models.BotMessage;
 import link.buzalex.models.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -14,19 +15,21 @@ import java.util.Map;
 public class BotMenuManagerImpl implements link.buzalex.api.BotMenuManager {
     private static final Logger LOG = LoggerFactory.getLogger(BotMenuManagerImpl.class);
 
-    public static final String START_POSITION = "BOT_MENU_START_POSITION";
-
-    private final UserContextStorage<? super UserContext> userContextStorage;
+    private final UserContextStorage<UserContext> userContextStorage;
 
     private final BotMenuStepProcessor stepProcessor;
 
-    private final UserContextInitializer<? super UserContext> userContextInitializer;
+    private final UserContextInitializer<UserContext> userContextInitializer;
 
     private final BotMenuStepsHolder stepsHolder;
 
-    private final Map<String, BotMenuSectionHandler<? super UserContext>> menuHandlers;
+    private final Map<String, BotMenuSectionHandler> menuHandlers;
 
-    public BotMenuManagerImpl(UserContextStorage<? super UserContext> userContextStorage, BotMenuStepProcessor stepProcessor, UserContextInitializer<? super UserContext> userContextInitializer, BotMenuStepsHolder stepsHolder, Map<String, BotMenuSectionHandler<? super UserContext>> menuHandlers) {
+    public BotMenuManagerImpl(UserContextStorage userContextStorage,
+                              BotMenuStepProcessor stepProcessor,
+                              UserContextInitializer userContextInitializer,
+                              BotMenuStepsHolder stepsHolder,
+                              Map<String, BotMenuSectionHandler> menuHandlers) {
         this.userContextStorage = userContextStorage;
         this.stepProcessor = stepProcessor;
         this.userContextInitializer = userContextInitializer;
@@ -44,9 +47,9 @@ public class BotMenuManagerImpl implements link.buzalex.api.BotMenuManager {
         UserContext user = userContextStorage.getUser(message.userId());
         user = user == null ? userContextInitializer.initUser(message) : user;
 
-        if (START_POSITION.equals(user.getCurrentMenuSection())) {
+        if (user.getCurrentMenuSection() == null) {
             Integer minOrder = null;
-            for (Map.Entry<String, BotMenuSectionHandler<? super UserContext>> handler : menuHandlers.entrySet()) {
+            for (Map.Entry<String, BotMenuSectionHandler> handler : menuHandlers.entrySet()) {
                 if (handler.getValue().enterCondition(message, user)) {
                     if (minOrder == null || handler.getValue().order() < minOrder) {
                         minOrder = handler.getValue().order();
@@ -55,12 +58,20 @@ public class BotMenuManagerImpl implements link.buzalex.api.BotMenuManager {
                 }
             }
         }
+        if (user.getCurrentMenuSection() == null) {
+            LOG.warn("Step cannot be determined");
+            return;
+        }
         final BotMenuSectionHandler<? super UserContext> botMenuSectionHandler = menuHandlers.get(user.getCurrentMenuSection());
         LOG.info("Chosen menu handler: " + botMenuSectionHandler.getClass().getName());
         stepProcessor.beforeStepExecution(message, user);
-        final BotActions botActions = START_POSITION.equals(user.getCurrentStep()) ?
+        if (user.getCurrentMenuSection() == null) {
+            LOG.warn("Step finished");
+            return;
+        }
+        final BotActions botActions = user.getStepFunc() == null ?
                 botMenuSectionHandler.startStep(message, user) :
-                stepsHolder.getStep(user.getCurrentMenuSection(), user.getCurrentStep()).apply(message, user);
+                user.getStepFunc().apply(message, user);
         stepProcessor.afterStepExecution(message, user, botActions);
         userContextStorage.saveUser(user);
     }
