@@ -1,15 +1,12 @@
 package link.buzalex.models;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class UserContext {
     private Long id;
     private Map<String, String> data = new HashMap<>();
     private String menuSection;
-    private Deque<String> menuSteps = new ArrayDeque<>();
+    private List<String> menuSteps = new ArrayList<>();
 
     public UserContext() {
     }
@@ -44,11 +41,11 @@ public class UserContext {
     }
 
     public Deque<String> getMenuSteps() {
-        return menuSteps;
+        return new ArrayDeque<>(menuSteps);
     }
 
     public void setMenuSteps(Deque<String> menuSteps) {
-        this.menuSteps = menuSteps;
+        this.menuSteps = menuSteps.stream().toList();
     }
 
     public void setData(Map<String, String> data) {

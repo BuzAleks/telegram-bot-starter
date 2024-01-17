@@ -6,6 +6,7 @@ import link.buzalex.models.BotMessageBuilder;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
 @Component
 public class BotMessageConverterImpl implements BotMessageConverter {
     @Override

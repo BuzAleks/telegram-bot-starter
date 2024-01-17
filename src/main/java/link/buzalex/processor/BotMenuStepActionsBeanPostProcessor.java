@@ -1,9 +1,8 @@
 package link.buzalex.processor;
 
-import link.buzalex.api.BotMenuSectionHandler;
-import link.buzalex.api.BotMenuStepActionsHolder;
-import link.buzalex.models.BotAction;
-import link.buzalex.models.ConditionalActions;
+import link.buzalex.api.BotMenuSectionProvider;
+import link.buzalex.api.BotMenuSectionsHolder;
+import link.buzalex.models.menu.MenuSection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -16,26 +15,14 @@ public class BotMenuStepActionsBeanPostProcessor implements BeanPostProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(BotMenuStepActionsBeanPostProcessor.class);
 
     @Autowired
-    private BotMenuStepActionsHolder stepsHolder;
+    private BotMenuSectionsHolder stepsHolder;
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof BotMenuSectionHandler) {
-            BotAction actions = ((BotMenuSectionHandler<?>) bean).startStep();
-            stepsHolder.putStepActions(beanName, "root", actions);
-            collect(beanName, actions);
+        if (bean instanceof BotMenuSectionProvider) {
+            MenuSection menuSection = ((BotMenuSectionProvider<?>) bean).provideMenuSection();
+            stepsHolder.putMenuSection(menuSection);
         }
         return BeanPostProcessor.super.postProcessBeforeInitialization(bean, beanName);
-    }
-
-    private void collect(String beanName, BotAction actions) {
-        stepsHolder.putStepActions(beanName, actions.name(), actions);
-        for (ConditionalActions conditionalAction : actions.conditionalActions()) {
-            if (!conditionalAction.finish()){
-                collect(beanName, conditionalAction.nextStep());
-            }
-        }
-        if (actions.finish()) return;
-        collect(beanName, actions.nextStep());
     }
 }

@@ -1,13 +1,14 @@
 package link.buzalex.impl;
 
-import link.buzalex.api.*;
+import link.buzalex.api.BotMenuStepProcessor;
+import link.buzalex.api.BotMenuUserManager;
+import link.buzalex.api.UserContextInitializer;
+import link.buzalex.api.UserContextStorage;
 import link.buzalex.models.BotMessage;
 import link.buzalex.models.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class BotMenuUserManagerImpl implements BotMenuUserManager {
@@ -15,21 +16,17 @@ public class BotMenuUserManagerImpl implements BotMenuUserManager {
 
     private final UserContextStorage<UserContext> userContextStorage;
 
-    private final BotMenuStepActionsProcessor stepProcessor;
+    private final BotMenuStepProcessor stepProcessor;
 
     private final UserContextInitializer<UserContext> userContextInitializer;
 
 
     public BotMenuUserManagerImpl(UserContextStorage userContextStorage,
-                                  BotMenuStepActionsProcessor stepProcessor,
+                                  BotMenuStepProcessor stepProcessor,
                                   UserContextInitializer userContextInitializer) {
         this.userContextStorage = userContextStorage;
         this.stepProcessor = stepProcessor;
         this.userContextInitializer = userContextInitializer;
-
-//        menuHandlers.forEach((key, value) ->
-//                LOG.info("Got menuHandler: " + key)
-//        );
     }
 
     @Override

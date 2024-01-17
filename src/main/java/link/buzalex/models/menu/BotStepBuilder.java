@@ -1,58 +1,58 @@
-package link.buzalex.models;
+package link.buzalex.models.menu;
+
+import link.buzalex.models.BotMessage;
+import link.buzalex.models.BotMessageReply;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-public class BotActionBuilder {
-    private BotAction nextStep;
-    private BiFunction<BotMessage, ? super UserContext, BotAction> nextStepFunc;
-    private Map<Long, List<BotMessageReply>> replies = new HashMap<>();
-    private List<ConditionalActions> conditionalActions = new ArrayList<>();
-    private List<Consumer<BotMessage>> peeks = new ArrayList<>();
-    private String paramName;
-    private String name;
-    private boolean finish;
+public class BotStepBuilder {
+    BotStepBuilder nextStep;
+    Map<Long, List<BotMessageReply>> replies = new HashMap<>();
+    List<ConditionalActionsBuilder> conditionalActions = new ArrayList<>();
+    List<Consumer<BotMessage>> peeks = new ArrayList<>();
+    String paramName;
+    String name;
+    boolean finish;
 
-    public BotActionBuilder name(String stepName) {
-        this.name = stepName;
-        return this;
+    private BotStepBuilder(String name) {
+        this.name = name;
     }
 
-    public BotActionBuilder nextStep(BotAction nextStep) {
+    public static BotStepBuilder name(String stepName) {
+        return new BotStepBuilder(stepName);
+    }
+
+    public BotStepBuilder nextStep(BotStepBuilder nextStep) {
         this.nextStep = nextStep;
         return this;
     }
 
-    public BotActionBuilder finish() {
+    public BotStepBuilder finish() {
         this.finish = true;
         return this;
     }
 
-    public BotActionBuilder nextStep(BiFunction<BotMessage, ? super UserContext, BotAction> stepName) {
-        this.nextStepFunc = stepName;
-        return this;
-    }
-
-    public BotActionBuilder message(BotMessageReply message) {
+    public BotStepBuilder message(BotMessageReply message) {
         this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
         return this;
     }
 
-    public BotActionBuilder message(String message) {
+    public BotStepBuilder message(String message) {
         return this.message(new BotMessageReply(message));
     }
 
-    public BotActionBuilder message(BotMessageReply message, Long userId) {
+    public BotStepBuilder message(BotMessageReply message, Long userId) {
         this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(message);
         return this;
     }
 
-    public BotActionBuilder message(String message, Long userId) {
+    public BotStepBuilder message(String message, Long userId) {
         return this.message(new BotMessageReply(message), userId);
     }
 
@@ -60,10 +60,11 @@ public class BotActionBuilder {
         return this.new GotAnswer();
     }
 
-    public BotAction build() {
-        return new BotAction(
-                name, replies, conditionalActions, peeks, paramName, nextStep, nextStep.name(), finish
-        );
+    BotStep build() {
+        final List<ConditionalActions> conditionals = conditionalActions.stream()
+                .map(s -> new ConditionalActions(s.condition, s.replies, s.nextStep.name, finish))
+                .collect(Collectors.toList());
+        return new BotStep(name, replies, conditionals, peeks, paramName, nextStep == null ? null : nextStep.name, finish);
     }
 
     public class GotAnswer {
@@ -72,27 +73,27 @@ public class BotActionBuilder {
         }
 
         public GotAnswer peek(Consumer<BotMessage> consumer) {
-            BotActionBuilder.this.peeks.add(consumer);
+            BotStepBuilder.this.peeks.add(consumer);
             return this;
         }
 
-        public BotActionBuilder saveAs(String name) {
-            BotActionBuilder.this.paramName = name;
-            return BotActionBuilder.this;
+        public BotStepBuilder saveAs(String name) {
+            BotStepBuilder.this.paramName = name;
+            return BotStepBuilder.this;
         }
     }
 
     public class ConditionalActionsBuilder {
-        private Predicate<BotMessage> condition;
-        private BotAction nextStep;
-        private Map<Long, List<BotMessageReply>> replies = new HashMap<>();
-        private boolean finish;
+        Predicate<BotMessage> condition;
+        BotStepBuilder nextStep;
+        Map<Long, List<BotMessageReply>> replies = new HashMap<>();
+        boolean finish;
 
         ConditionalActionsBuilder(Predicate<BotMessage> condition) {
             this.condition = condition;
         }
 
-        public ConditionalActionsBuilder nextStep(BotAction stepName) {
+        public ConditionalActionsBuilder nextStep(BotStepBuilder stepName) {
             this.nextStep = stepName;
             return this;
         }
@@ -125,13 +126,13 @@ public class BotActionBuilder {
             return new GotAnswer();
         }
 
-        public BotAction build() {
+        BotStep build() {
             addActions();
-            return BotActionBuilder.this.build();
+            return BotStepBuilder.this.build();
         }
 
         private void addActions() {
-            BotActionBuilder.this.conditionalActions.add(new ConditionalActions(condition, replies, nextStep, nextStep.name(), finish));
+            BotStepBuilder.this.conditionalActions.add(this);
         }
     }
 }
