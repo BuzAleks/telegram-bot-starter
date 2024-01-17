@@ -21,12 +21,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class TelegramLongPollingHandler extends TelegramLongPollingBot {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramLongPollingHandler.class);
 
-    static DefaultBotOptions options = new DefaultBotOptions();
-
-    static {
-        options.setMaxThreads(4);
-    }
-
     private final BotMenuUserManagerImpl menuManager;
     private final ExceptionHandler exceptionHandler;
     private final BotMessageConverter messageMapper;
@@ -39,7 +33,7 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
             BotMessageConverter messageMapper,
             BotApiService apiService) {
 
-        super(options, properties.token);
+        super(properties.token);
         this.menuManager = menuManager;
         this.exceptionHandler = exceptionHandler;
         this.messageMapper = messageMapper;
@@ -67,7 +61,7 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         try {
-            LOG.info("Handled message: " + update.toString());
+            LOG.debug("Handled message: " + update.toString());
             final BotMessage botMessage = messageMapper.convert(update);
             menuManager.handleMessage(botMessage);
         } catch (Exception e) {
@@ -77,6 +71,6 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
 
     @Override
     public void onRegister() {
-        LOG.info("TelegramLongPollingHandler has successfully registered");
+        LOG.debug("TelegramLongPollingHandler has successfully initialized");
     }
 }

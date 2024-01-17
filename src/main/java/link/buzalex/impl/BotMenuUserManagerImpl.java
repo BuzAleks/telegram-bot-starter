@@ -5,7 +5,7 @@ import link.buzalex.api.BotMenuUserManager;
 import link.buzalex.api.UserContextInitializer;
 import link.buzalex.api.UserContextStorage;
 import link.buzalex.models.BotMessage;
-import link.buzalex.models.UserContext;
+import link.buzalex.api.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class BotMenuUserManagerImpl implements BotMenuUserManager {
 
     @Override
     public void handleMessage(BotMessage message) {
-        LOG.info("Got message: " + message.text());
+        LOG.debug("Got message: " + message.text());
 
         UserContext user = userContextStorage.getUser(message.userId());
         user = user == null ? userContextInitializer.initUser(message) : user;

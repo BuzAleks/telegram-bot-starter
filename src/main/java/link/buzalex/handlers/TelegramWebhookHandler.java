@@ -49,14 +49,14 @@ public class TelegramWebhookHandler extends TelegramWebhookBot {
                 .url(properties.webhook.url + properties.webhook.path)
                 .build());
 
-        LOG.info("TelegramWebhookHandler has successfully initiated");
+        LOG.debug("TelegramWebhookHandler has successfully initialized");
 
     }
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         try {
-            LOG.info("Handled message: " + update.toString());
+            LOG.debug("Handled message: " + update.toString());
             final BotMessage botMessage = messageMapper.convert(update);
             menuManager.handleMessage(botMessage);
         } catch (Exception e) {

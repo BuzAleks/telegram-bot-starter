@@ -1,7 +1,7 @@
 package link.buzalex.impl;
 
 import link.buzalex.api.BotMenuSectionProvider;
-import link.buzalex.models.UserContext;
+import link.buzalex.models.UserContextImpl;
 import link.buzalex.models.menu.BotStepBuilder;
 import link.buzalex.models.menu.MenuSection;
 import link.buzalex.models.menu.MenuSectionBuilder;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnMissingBean(value = BotMenuSectionProvider.class, ignored = ExampleGreetingBotMenuSectionProvider.class)
-public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProvider<UserContext> {
+public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProvider<UserContextImpl> {
 
     @Override
     public MenuSection provideMenuSection() {

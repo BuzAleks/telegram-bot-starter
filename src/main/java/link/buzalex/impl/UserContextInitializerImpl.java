@@ -1,8 +1,9 @@
 package link.buzalex.impl;
 
+import link.buzalex.api.UserContext;
 import link.buzalex.api.UserContextInitializer;
 import link.buzalex.models.BotMessage;
-import link.buzalex.models.UserContext;
+import link.buzalex.models.UserContextImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -15,9 +16,9 @@ public class UserContextInitializerImpl implements UserContextInitializer<UserCo
 
     @Override
     public UserContext initUser(BotMessage botMessage) {
-        final UserContext userContext = new UserContext();
+        final UserContext userContext = new UserContextImpl();
         userContext.setId(botMessage.userId());
-        LOG.info("New user initiated: " + botMessage.userId());
+        LOG.debug("New user initialized: " + botMessage.userId());
         return userContext;
     }
 }
