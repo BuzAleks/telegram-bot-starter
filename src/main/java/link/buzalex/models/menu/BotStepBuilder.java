@@ -8,12 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class BotStepBuilder {
     BotStepBuilder nextStep;
-    Map<Long, List<BotMessageReply>> replies = new HashMap<>();
+    Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
     List<ConditionalActionsBuilder> conditionalActions = new ArrayList<>();
     List<Consumer<BotMessage>> peeks = new ArrayList<>();
     String paramName;
@@ -38,8 +39,13 @@ public class BotStepBuilder {
         return this;
     }
 
-    public BotStepBuilder message(BotMessageReply message) {
+    public BotStepBuilder message(Function<BotMessage, BotMessageReply> message) {
         this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
+        return this;
+    }
+
+    public BotStepBuilder message(BotMessageReply message) {
+        this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes->message);
         return this;
     }
 
@@ -48,7 +54,7 @@ public class BotStepBuilder {
     }
 
     public BotStepBuilder message(BotMessageReply message, Long userId) {
-        this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(message);
+        this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes->message);
         return this;
     }
 
@@ -86,7 +92,7 @@ public class BotStepBuilder {
     public class ConditionalActionsBuilder {
         Predicate<BotMessage> condition;
         BotStepBuilder nextStep;
-        Map<Long, List<BotMessageReply>> replies = new HashMap<>();
+        Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
         boolean finish;
 
         ConditionalActionsBuilder(Predicate<BotMessage> condition) {
@@ -103,8 +109,13 @@ public class BotStepBuilder {
             return this;
         }
 
-        public ConditionalActionsBuilder message(BotMessageReply message) {
+        public ConditionalActionsBuilder message(Function<BotMessage, BotMessageReply> message) {
             this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
+            return this;
+        }
+
+        public ConditionalActionsBuilder message(BotMessageReply message) {
+            this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes->message);
             return this;
         }
 
@@ -113,7 +124,7 @@ public class BotStepBuilder {
         }
 
         public ConditionalActionsBuilder message(BotMessageReply message, Long userId) {
-            this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(message);
+            this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes->message);
             return this;
         }
 

@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 public final class MenuSectionBuilder {
     private String name;
     private Predicate<BotMessage> selector;
-    private Integer order;
+    private int order;
     private String rootStepName;
     private Map<String, BotStep> steps = new HashMap<>();
 
@@ -27,7 +27,7 @@ public final class MenuSectionBuilder {
         return this;
     }
 
-    public MenuSectionBuilder order(Integer order) {
+    public MenuSectionBuilder order(int order) {
         this.order = order;
         return this;
     }

@@ -6,10 +6,11 @@ import link.buzalex.models.BotMessageReply;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public record BotStep(
         String name,
-        Map<Long, List<BotMessageReply>> replies,
+        Map<Long, List<Function<BotMessage, BotMessageReply>>> replies,
         List<ConditionalActions> conditionalActions,
         List<Consumer<BotMessage>> peeks,
         String saveAs,

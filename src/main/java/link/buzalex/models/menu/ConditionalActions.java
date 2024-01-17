@@ -5,11 +5,12 @@ import link.buzalex.models.BotMessageReply;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public record ConditionalActions(
         Predicate<BotMessage> condition,
-        Map<Long, List<BotMessageReply>> replies,
+        Map<Long, List<Function<BotMessage, BotMessageReply>>> replies,
         String nextStepName,
         boolean finish) {
 }

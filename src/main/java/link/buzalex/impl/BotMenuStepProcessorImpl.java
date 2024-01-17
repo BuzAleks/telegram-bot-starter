@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Component
 public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
@@ -47,7 +48,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
         if (menuSection != null) {
             LOG.debug("Chosen menu section: " + menuSection.name());
             user.setMenuSection(menuSection.name());
-            user.getMenuSteps().push(menuSection.rootStepName());
+            user.getMenuSteps().add(menuSection.rootStepName());
             processCurrentStep(menuSection.steps().get(menuSection.rootStepName()), message, user);
             return;
         }
@@ -57,7 +58,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             return;
         }
 
-        String prevStep = user.getMenuSteps().peekLast();
+        String prevStep = user.getMenuSteps().get(user.getMenuSteps().size()-1);
 
         if (prevStep != null) {
             BotStep stepActions = stepsHolder.getStep(user.getMenuSection(), prevStep);
@@ -84,7 +85,9 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
                     userContext.setMenuSection(null);
                     userContext.getMenuSteps().clear();
                     LOG.debug("Conditional step finished");
+                    return;
                 }
+                break;
             }
         }
 
@@ -103,19 +106,19 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
         }
 
         if (nextStepName != null) {
-            userContext.getMenuSteps().push(nextStepName);
+            LOG.debug("Next step pushed: "+ nextStepName);
+            userContext.getMenuSteps().add(nextStepName);
             BotStep stepActions = stepsHolder.getStep(userContext.getMenuSection(), nextStepName);
             processCurrentStep(stepActions, botMessage, userContext);
         }
-
-        // TODO: 16.01.2024 add more processing
     }
 
-    private void processReplies(BotMessage botMessage, Map<Long, List<BotMessageReply>> replies) {
-        for (Map.Entry<Long, List<BotMessageReply>> replyEntry : replies.entrySet()) {
+    private void processReplies(BotMessage botMessage, Map<Long, List<Function<BotMessage, BotMessageReply>>> replies) {
+        for (Map.Entry<Long, List<Function<BotMessage, BotMessageReply>>> replyEntry : replies.entrySet()) {
             Long userId = replyEntry.getKey() == 0L ? botMessage.userId() : replyEntry.getKey();
-            for (BotMessageReply botMessageReply : replyEntry.getValue()) {
-                apiService.sendToUser(botMessageReply.text(), userId);
+            for (Function<BotMessage, BotMessageReply> botMessageReply : replyEntry.getValue()) {
+                final BotMessageReply apply = botMessageReply.apply(botMessage);
+                apiService.sendToUser(apply.text(), userId);
             }
         }
     }

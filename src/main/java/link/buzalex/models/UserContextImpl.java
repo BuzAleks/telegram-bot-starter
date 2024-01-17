@@ -21,27 +21,35 @@ public class UserContextImpl implements UserContext {
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
+
     public Map<String, String> getData() {
         return data;
     }
+
     public void putData(String key, String value) {
         data.put(key, value);
     }
+
     public String getMenuSection() {
         return menuSection;
     }
+
     public void setMenuSection(String menuSection) {
         this.menuSection = menuSection;
     }
-    public Deque<String> getMenuSteps() {
-        return new ArrayDeque<>(menuSteps);
+
+    public List<String> getMenuSteps() {
+        return menuSteps;
     }
-    public void setMenuSteps(Deque<String> menuSteps) {
-        this.menuSteps = menuSteps.stream().toList();
+
+    public void setMenuSteps(List<String> menuSteps) {
+        this.menuSteps = menuSteps;
     }
+
     public void setData(Map<String, String> data) {
         this.data = data;
     }

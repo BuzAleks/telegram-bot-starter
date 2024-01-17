@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 public record MenuSection(
         String name,
         Predicate<BotMessage> selector,
-        Integer order,
+        int order,
         String rootStepName,
         Map<String, BotStep> steps
 ) {

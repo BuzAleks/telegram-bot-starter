@@ -1,6 +1,7 @@
 package link.buzalex.api;
 
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 
 public interface UserContext {
@@ -14,5 +15,5 @@ public interface UserContext {
 
     void setMenuSection(String menuSection);
 
-    Deque<String> getMenuSteps();
+    List<String> getMenuSteps();
 }
