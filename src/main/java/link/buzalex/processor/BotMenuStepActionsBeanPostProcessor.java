@@ -22,6 +22,7 @@ public class BotMenuStepActionsBeanPostProcessor implements BeanPostProcessor {
         if (bean instanceof BotMenuSectionProvider) {
             MenuSection menuSection = ((BotMenuSectionProvider<?>) bean).provideMenuSection();
             stepsHolder.putMenuSection(menuSection);
+            LOG.debug("Added menu section: [" + menuSection.name() + "] with steps: " + menuSection.steps().keySet());
         }
         return BeanPostProcessor.super.postProcessBeforeInitialization(bean, beanName);
     }

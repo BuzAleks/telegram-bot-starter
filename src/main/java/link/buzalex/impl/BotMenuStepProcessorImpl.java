@@ -58,7 +58,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             return;
         }
 
-        String prevStep = user.getMenuSteps().get(user.getMenuSteps().size()-1);
+        String prevStep = user.getMenuSteps().get(user.getMenuSteps().size() - 1);
 
         if (prevStep != null) {
             BotStep stepActions = stepsHolder.getStep(user.getMenuSection(), prevStep);
@@ -68,7 +68,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
     private void processCurrentStep(BotStep actions, BotMessage botMessage, UserContext user) {
         LOG.debug("Current step is being processed: " + actions.name());
-        processReplies(botMessage, actions.replies());
+        processReplies(botMessage, actions.stepActions().replies());
     }
 
     private void processPrevStep(BotStep actions, BotMessage botMessage, UserContext userContext) {
@@ -76,27 +76,29 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
         String nextStepName = null;
 
-        for (ConditionalActions conditionalAction : actions.conditionalActions()) {
-            if (conditionalAction.condition().test(botMessage)) {
-                LOG.debug("Condition is being processed on step: " + actions.name());
-                processReplies(botMessage, conditionalAction.replies());
-                nextStepName = conditionalAction.nextStepName();
-                if (conditionalAction.finish()) {
-                    userContext.setMenuSection(null);
-                    userContext.getMenuSteps().clear();
-                    LOG.debug("Conditional step finished");
-                    return;
+        if (actions.answerActions() != null) {
+            for (ConditionalActions conditionalAction : actions.answerActions().conditionalActions()) {
+                if (conditionalAction.condition().test(botMessage)) {
+                    LOG.debug("Condition is being processed on step: " + actions.name());
+                    processReplies(botMessage, conditionalAction.replies());
+                    nextStepName = conditionalAction.nextStepName();
+                    if (conditionalAction.nextStepName() == null) {
+                        userContext.setMenuSection(null);
+                        userContext.getMenuSteps().clear();
+                        LOG.debug("Conditional step finished");
+                        return;
+                    }
+                    break;
                 }
-                break;
             }
         }
 
-        if (actions.saveAs() != null) {
-            userContext.getData().put(actions.saveAs(), botMessage.text());
+        if (actions.answerActions() != null && actions.answerActions().saveAs() != null) {
+            userContext.getData().put(actions.answerActions().saveAs(), botMessage.text());
         }
 
         if (nextStepName == null) {
-            if (actions.finish()) {
+            if (actions.nextStepName() == null) {
                 userContext.setMenuSection(null);
                 userContext.getMenuSteps().clear();
                 LOG.debug("Step finished");
@@ -106,7 +108,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
         }
 
         if (nextStepName != null) {
-            LOG.debug("Next step pushed: "+ nextStepName);
+            LOG.debug("Next step pushed: " + nextStepName);
             userContext.getMenuSteps().add(nextStepName);
             BotStep stepActions = stepsHolder.getStep(userContext.getMenuSection(), nextStepName);
             processCurrentStep(stepActions, botMessage, userContext);

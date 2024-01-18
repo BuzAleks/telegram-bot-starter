@@ -40,20 +40,22 @@ public final class MenuSectionBuilder {
 
     private void collect(BotStepBuilder step) {
         steps.put(step.name, step.build());
-        for (BotStepBuilder.ConditionalActionsBuilder conditionalAction : step.conditionalActions) {
-            if (isFinishOrDuplicate(conditionalAction)) continue;
-            collect(conditionalAction.nextStep);
+        if (step.answerActions != null) {
+            for (BotStepBuilder.AnswerActionsBuilder.ConditionalActionsBuilder conditionalAction : step.answerActions.conditionalActions) {
+                if (isFinishOrDuplicate(conditionalAction)) continue;
+                collect(conditionalAction.nextStep);
+            }
         }
         if (isFinishOrDuplicate(step)) return;
         collect(step.nextStep);
     }
 
-    private boolean isFinishOrDuplicate(BotStepBuilder.ConditionalActionsBuilder step) {
-        return step.finish || step.nextStep == null || steps.containsKey(step.nextStep.name);
+    private boolean isFinishOrDuplicate(BotStepBuilder.AnswerActionsBuilder.ConditionalActionsBuilder step) {
+        return step.nextStep == null || steps.containsKey(step.nextStep.name);
     }
 
     private boolean isFinishOrDuplicate(BotStepBuilder step) {
-        return step.finish || step.nextStep == null || steps.containsKey(step.nextStep.name);
+        return step.nextStep == null || steps.containsKey(step.nextStep.name);
     }
 
     public MenuSection build() {

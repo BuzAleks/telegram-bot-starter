@@ -13,155 +13,181 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class BotStepBuilder {
+    String name;
     BotStepBuilder nextStep;
     String nextStepName;
-    Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
-    List<ConditionalActionsBuilder> conditionalActions = new ArrayList<>();
-    List<Consumer<BotMessage>> peeks = new ArrayList<>();
-    String paramName;
-    String name;
-    boolean finish;
+    StepActionsBuilder stepActions;
+    AnswerActionsBuilder answerActions;
 
-    private BotStepBuilder(String name) {
+    BotStepBuilder(String name) {
         this.name = name;
     }
 
-    public static BotStepBuilder name(String stepName) {
-        return new BotStepBuilder(stepName);
-    }
-
-    public BotStepBuilder nextStep(String stepName) {
-        this.nextStepName = stepName;
-        return this;
-    }
-
-    public BotStepBuilder nextStep(BotStepBuilder nextStep) {
-        this.nextStep = nextStep;
-        return this;
-    }
-
-    public BotStepBuilder finish() {
-        this.finish = true;
-        return this;
-    }
-
-    public BotStepBuilder message(Function<BotMessage, BotMessageReply> message) {
-        this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
-        return this;
-    }
-
-    public BotStepBuilder message(BotMessageReply message) {
-        this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes -> message);
-        return this;
-    }
-
-    public BotStepBuilder message(String message) {
-        return this.message(new BotMessageReply(message));
-    }
-
-    public BotStepBuilder message(BotMessageReply message, Long userId) {
-        this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes -> message);
-        return this;
-    }
-
-    public BotStepBuilder message(String message, Long userId) {
-        return this.message(new BotMessageReply(message), userId);
-    }
-
-    public GotAnswer gotAnswer() {
-        return this.new GotAnswer();
-    }
-
     BotStep build() {
-        final List<ConditionalActions> conditionals = conditionalActions.stream()
-                .map(s -> {
-                    String nextStepName = s.nextStep == null ?
-                            (s.nextStepName == null ? null : s.nextStepName) : s.nextStep.name;
-                    return new ConditionalActions(s.condition, s.replies, nextStepName, finish);
-                })
-                .collect(Collectors.toList());
         String nextStepNameResult = nextStep == null ?
                 (nextStepName == null ? null : nextStepName) : nextStep.name;
-        return new BotStep(name, replies, conditionals, peeks, paramName, nextStepNameResult, finish);
+        BaseStepActions stepActionsResult = stepActions == null ? null : stepActions.build();
+        AnswerActions answerActionsResult = answerActions == null ? null : answerActions.build();
+        return new BotStep(name, stepActionsResult, answerActionsResult, nextStepNameResult);
     }
 
-    public class GotAnswer {
-        public ConditionalActionsBuilder ifTrue(Predicate<BotMessage> condition) {
-            return new ConditionalActionsBuilder(condition);
+
+    public static StepActionsBuilder name(String stepName) {
+        final BotStepBuilder botStepBuilder = new BotStepBuilder(stepName);
+        botStepBuilder.stepActions = botStepBuilder.new StepActionsBuilder();
+        return botStepBuilder.stepActions;
+    }
+
+    class BaseStepActionsBuilder {
+        final Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
+        final List<Consumer<BotMessage>> peeks = new ArrayList<>();
+
+        public BotStepBuilder nextStep(String stepName) {
+            BotStepBuilder.this.nextStepName = stepName;
+            return BotStepBuilder.this;
         }
 
-        public GotAnswer peek(Consumer<BotMessage> consumer) {
-            BotStepBuilder.this.peeks.add(consumer);
-            return this;
+        public BotStepBuilder nextStep(BotStepBuilder nextStep) {
+            BotStepBuilder.this.nextStep = nextStep;
+            return BotStepBuilder.this;
         }
 
-        public BotStepBuilder saveAs(String name) {
-            BotStepBuilder.this.paramName = name;
+        public BotStepBuilder finish() {
+            BotStepBuilder.this.nextStepName = null;
             return BotStepBuilder.this;
         }
     }
 
-    public class ConditionalActionsBuilder {
-        Predicate<BotMessage> condition;
-        BotStepBuilder nextStep;
-        String nextStepName;
-        Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
-        boolean finish;
+    public class StepActionsBuilder extends BaseStepActionsBuilder {
 
-        ConditionalActionsBuilder(Predicate<BotMessage> condition) {
-            this.condition = condition;
+        StepActionsBuilder() {
         }
 
-        public ConditionalActionsBuilder nextStep(String stepName) {
-            this.nextStepName = stepName;
+        BaseStepActions build() {
+            return new BaseStepActions(replies, peeks);
+        }
+
+        public StepActionsBuilder message(Long user, Function<BotMessage, BotMessageReply> message) {
+            this.replies.computeIfAbsent(user, s -> new ArrayList<>()).add(message);
             return this;
         }
 
-        public ConditionalActionsBuilder nextStep(BotStepBuilder stepName) {
-            this.nextStep = stepName;
+        public StepActionsBuilder message(Function<BotMessage, BotMessageReply> message) {
+            this.message(0L, message);
             return this;
         }
 
-        public ConditionalActionsBuilder finish() {
-            this.finish = true;
-            return this;
-        }
-
-        public ConditionalActionsBuilder message(Function<BotMessage, BotMessageReply> message) {
-            this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
-            return this;
-        }
-
-        public ConditionalActionsBuilder message(BotMessageReply message) {
+        public StepActionsBuilder message(BotMessageReply message) {
             this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes -> message);
             return this;
         }
 
-        public ConditionalActionsBuilder message(String message) {
+        public StepActionsBuilder message(String message) {
             return this.message(new BotMessageReply(message));
         }
 
-        public ConditionalActionsBuilder message(BotMessageReply message, Long userId) {
-            this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes -> message);
+        public StepActionsBuilder peek(Consumer<BotMessage> peek) {
+            this.peeks.add(peek);
             return this;
         }
 
-        public ConditionalActionsBuilder message(String message, Long userId) {
-            return this.message(new BotMessageReply(message), userId);
+        public AnswerActionsBuilder waitAnswer() {
+            final AnswerActionsBuilder answerActionsBuilder = BotStepBuilder.this.new AnswerActionsBuilder();
+            BotStepBuilder.this.answerActions = answerActionsBuilder;
+            return answerActionsBuilder;
         }
 
-        public GotAnswer also() {
-            addActions();
-            return new GotAnswer();
+    }
+
+    public class AnswerActionsBuilder extends BaseStepActionsBuilder {
+        String saveAs;
+        final List<ConditionalActionsBuilder> conditionalActions = new ArrayList<>();
+
+        AnswerActionsBuilder() {
         }
 
-        BotStep build() {
-            addActions();
-            return BotStepBuilder.this.build();
+        AnswerActions build() {
+            return new AnswerActions(replies, peeks, saveAs,
+                    conditionalActions.stream()
+                            .map(ConditionalActionsBuilder::build)
+                            .collect(Collectors.toList()));
         }
 
-        private void addActions() {
-            BotStepBuilder.this.conditionalActions.add(this);
+        public ConditionalActionsBuilder ifTrue(Predicate<BotMessage> condition) {
+            final ConditionalActionsBuilder conditionalActionsBuilder = new ConditionalActionsBuilder(condition);
+            this.conditionalActions.add(conditionalActionsBuilder);
+            return conditionalActionsBuilder;
+        }
+
+        public AnswerActionsBuilder peek(Consumer<BotMessage> consumer) {
+            this.peeks.add(consumer);
+            return this;
+        }
+
+        public AnswerActionsBuilder saveAs(String name) {
+            this.saveAs = name;
+            return this;
+        }
+
+        public class ConditionalActionsBuilder {
+            Predicate<BotMessage> condition;
+            BotStepBuilder nextStep;
+            String nextStepName;
+            final Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
+            final List<Consumer<BotMessage>> peeks = new ArrayList<>();
+
+
+            ConditionalActionsBuilder(Predicate<BotMessage> condition) {
+                this.condition = condition;
+            }
+
+            ConditionalActions build() {
+                String nextStepNameResult = nextStep == null ?
+                        (nextStepName == null ? null : nextStepName) : nextStep.name;
+                return new ConditionalActions(replies, peeks, condition, nextStepNameResult);
+            }
+
+            public ConditionalActionsBuilder nextStep(String stepName) {
+                this.nextStepName = stepName;
+                return this;
+            }
+
+            public ConditionalActionsBuilder nextStep(BotStepBuilder stepName) {
+                this.nextStep = stepName;
+                return this;
+            }
+
+            public ConditionalActionsBuilder finish() {
+                this.nextStep = null;
+                return this;
+            }
+
+            public ConditionalActionsBuilder message(Function<BotMessage, BotMessageReply> message) {
+                this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
+                return this;
+            }
+
+            public ConditionalActionsBuilder message(BotMessageReply message) {
+                this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes -> message);
+                return this;
+            }
+
+            public ConditionalActionsBuilder message(String message) {
+                return this.message(new BotMessageReply(message));
+            }
+
+            public ConditionalActionsBuilder message(BotMessageReply message, Long userId) {
+                this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes -> message);
+                return this;
+            }
+
+            public ConditionalActionsBuilder message(String message, Long userId) {
+                return this.message(new BotMessageReply(message), userId);
+            }
+
+            public AnswerActionsBuilder also() {
+                return AnswerActionsBuilder.this;
+            }
         }
     }
 }
