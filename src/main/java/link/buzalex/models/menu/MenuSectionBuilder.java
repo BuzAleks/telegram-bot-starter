@@ -17,7 +17,7 @@ public final class MenuSectionBuilder {
         this.name = name;
     }
 
-    public static MenuSectionBuilder name(String name){
+    public static MenuSectionBuilder name(String name) {
         return new MenuSectionBuilder(name);
     }
 
@@ -41,12 +41,19 @@ public final class MenuSectionBuilder {
     private void collect(BotStepBuilder step) {
         steps.put(step.name, step.build());
         for (BotStepBuilder.ConditionalActionsBuilder conditionalAction : step.conditionalActions) {
-            if (!conditionalAction.finish) {
-                collect(conditionalAction.nextStep);
-            }
+            if (isFinishOrDuplicate(conditionalAction)) continue;
+            collect(conditionalAction.nextStep);
         }
-        if (step.finish) return;
+        if (isFinishOrDuplicate(step)) return;
         collect(step.nextStep);
+    }
+
+    private boolean isFinishOrDuplicate(BotStepBuilder.ConditionalActionsBuilder step) {
+        return step.finish || step.nextStep == null || steps.containsKey(step.nextStep.name);
+    }
+
+    private boolean isFinishOrDuplicate(BotStepBuilder step) {
+        return step.finish || step.nextStep == null || steps.containsKey(step.nextStep.name);
     }
 
     public MenuSection build() {

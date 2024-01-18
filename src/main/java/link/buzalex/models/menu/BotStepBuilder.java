@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 public class BotStepBuilder {
     BotStepBuilder nextStep;
+    String nextStepName;
     Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
     List<ConditionalActionsBuilder> conditionalActions = new ArrayList<>();
     List<Consumer<BotMessage>> peeks = new ArrayList<>();
@@ -27,6 +28,11 @@ public class BotStepBuilder {
 
     public static BotStepBuilder name(String stepName) {
         return new BotStepBuilder(stepName);
+    }
+
+    public BotStepBuilder nextStep(String stepName) {
+        this.nextStepName = stepName;
+        return this;
     }
 
     public BotStepBuilder nextStep(BotStepBuilder nextStep) {
@@ -45,7 +51,7 @@ public class BotStepBuilder {
     }
 
     public BotStepBuilder message(BotMessageReply message) {
-        this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes->message);
+        this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes -> message);
         return this;
     }
 
@@ -54,7 +60,7 @@ public class BotStepBuilder {
     }
 
     public BotStepBuilder message(BotMessageReply message, Long userId) {
-        this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes->message);
+        this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes -> message);
         return this;
     }
 
@@ -68,9 +74,15 @@ public class BotStepBuilder {
 
     BotStep build() {
         final List<ConditionalActions> conditionals = conditionalActions.stream()
-                .map(s -> new ConditionalActions(s.condition, s.replies, s.nextStep.name, finish))
+                .map(s -> {
+                    String nextStepName = s.nextStep == null ?
+                            (s.nextStepName == null ? null : s.nextStepName) : s.nextStep.name;
+                    return new ConditionalActions(s.condition, s.replies, nextStepName, finish);
+                })
                 .collect(Collectors.toList());
-        return new BotStep(name, replies, conditionals, peeks, paramName, nextStep == null ? null : nextStep.name, finish);
+        String nextStepNameResult = nextStep == null ?
+                (nextStepName == null ? null : nextStepName) : nextStep.name;
+        return new BotStep(name, replies, conditionals, peeks, paramName, nextStepNameResult, finish);
     }
 
     public class GotAnswer {
@@ -92,11 +104,17 @@ public class BotStepBuilder {
     public class ConditionalActionsBuilder {
         Predicate<BotMessage> condition;
         BotStepBuilder nextStep;
+        String nextStepName;
         Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
         boolean finish;
 
         ConditionalActionsBuilder(Predicate<BotMessage> condition) {
             this.condition = condition;
+        }
+
+        public ConditionalActionsBuilder nextStep(String stepName) {
+            this.nextStepName = stepName;
+            return this;
         }
 
         public ConditionalActionsBuilder nextStep(BotStepBuilder stepName) {
@@ -115,7 +133,7 @@ public class BotStepBuilder {
         }
 
         public ConditionalActionsBuilder message(BotMessageReply message) {
-            this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes->message);
+            this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(mes -> message);
             return this;
         }
 
@@ -124,7 +142,7 @@ public class BotStepBuilder {
         }
 
         public ConditionalActionsBuilder message(BotMessageReply message, Long userId) {
-            this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes->message);
+            this.replies.computeIfAbsent(userId, s -> new ArrayList<>()).add(mes -> message);
             return this;
         }
 
