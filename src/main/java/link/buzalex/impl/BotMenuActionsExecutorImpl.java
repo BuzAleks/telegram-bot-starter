@@ -5,6 +5,7 @@ import link.buzalex.api.BotMenuActionsExecutor;
 import link.buzalex.api.UserContext;
 import link.buzalex.models.BotMessage;
 import link.buzalex.models.BotMessageReply;
+import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.menu.BaseStepActions;
 import org.springframework.stereotype.Component;
 
@@ -23,21 +24,22 @@ public class BotMenuActionsExecutorImpl implements BotMenuActionsExecutor {
 
     @Override
     public void execute(BotMessage botMessage, UserContext userContext, BaseStepActions actions) {
-        executeReplies(botMessage, actions.replies());
-        executePeeks(botMessage, actions.peeks());
+        final UserMessageContainer userMessageContainer = new UserMessageContainer(botMessage, userContext);
+        executeReplies(userMessageContainer, actions.replies());
+        executePeeks(userMessageContainer, actions.peeks());
     }
 
-    private void executePeeks(BotMessage botMessage, List<Consumer<BotMessage>> peeks) {
+    private void executePeeks(UserMessageContainer botMessage, List<Consumer<UserMessageContainer>> peeks) {
         peeks.forEach(peek -> {
             peek.accept(botMessage);
         });
     }
 
-    public void executeReplies(BotMessage botMessage, Map<Long, List<Function<BotMessage, BotMessageReply>>> replies) {
-        for (Map.Entry<Long, List<Function<BotMessage, BotMessageReply>>> replyEntry : replies.entrySet()) {
-            Long userId = replyEntry.getKey() == 0L ? botMessage.userId() : replyEntry.getKey();
-            for (Function<BotMessage, BotMessageReply> botMessageReply : replyEntry.getValue()) {
-                final BotMessageReply apply = botMessageReply.apply(botMessage);
+    public void executeReplies(UserMessageContainer messageContainer, Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies) {
+        for (Map.Entry<Long, List<Function<UserMessageContainer, BotMessageReply>>> replyEntry : replies.entrySet()) {
+            Long userId = replyEntry.getKey() == 0L ? messageContainer.message().userId() : replyEntry.getKey();
+            for (Function<UserMessageContainer, BotMessageReply> botMessageReply : replyEntry.getValue()) {
+                final BotMessageReply apply = botMessageReply.apply(messageContainer);
                 apiService.sendToUser(apply.text(), userId);
             }
         }

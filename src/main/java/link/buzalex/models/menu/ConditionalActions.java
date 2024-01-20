@@ -1,6 +1,6 @@
 package link.buzalex.models.menu;
 
-import link.buzalex.models.BotMessage;
+import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.BotMessageReply;
 
 import java.util.List;
@@ -10,17 +10,17 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ConditionalActions extends BaseStepActions {
-    private final Predicate<BotMessage> condition;
+    private final Predicate<UserMessageContainer> condition;
     private final String nextStepName;
 
-    public ConditionalActions(Map<Long, List<Function<BotMessage, BotMessageReply>>> replies, List<Consumer<BotMessage>> peeks, Predicate<BotMessage> condition, String nextStepName) {
+    public ConditionalActions(Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies, List<Consumer<UserMessageContainer>> peeks, Predicate<UserMessageContainer> condition, String nextStepName) {
         super(replies, peeks);
         this.condition = condition;
         this.nextStepName = nextStepName;
     }
 
 
-    public Predicate<BotMessage> condition() {
+    public Predicate<UserMessageContainer> condition() {
         return condition;
     }
 

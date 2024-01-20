@@ -1,6 +1,6 @@
 package link.buzalex.models.menu;
 
-import link.buzalex.models.BotMessage;
+import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.BotMessageReply;
 
 import java.util.ArrayList;
@@ -39,8 +39,8 @@ public class BotStepBuilder {
     }
 
     class BaseStepActionsBuilder {
-        final Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
-        final List<Consumer<BotMessage>> peeks = new ArrayList<>();
+        final Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies = new HashMap<>();
+        final List<Consumer<UserMessageContainer>> peeks = new ArrayList<>();
 
         public BotStepBuilder nextStep(String stepName) {
             BotStepBuilder.this.nextStepName = stepName;
@@ -67,12 +67,12 @@ public class BotStepBuilder {
             return new BaseStepActions(replies, peeks);
         }
 
-        public StepActionsBuilder message(Long user, Function<BotMessage, BotMessageReply> message) {
+        public StepActionsBuilder message(Long user, Function<UserMessageContainer, BotMessageReply> message) {
             this.replies.computeIfAbsent(user, s -> new ArrayList<>()).add(message);
             return this;
         }
 
-        public StepActionsBuilder message(Function<BotMessage, BotMessageReply> message) {
+        public StepActionsBuilder message(Function<UserMessageContainer, BotMessageReply> message) {
             this.message(0L, message);
             return this;
         }
@@ -86,7 +86,7 @@ public class BotStepBuilder {
             return this.message(new BotMessageReply(message));
         }
 
-        public StepActionsBuilder peek(Consumer<BotMessage> peek) {
+        public StepActionsBuilder peek(Consumer<UserMessageContainer> peek) {
             this.peeks.add(peek);
             return this;
         }
@@ -113,13 +113,13 @@ public class BotStepBuilder {
                             .collect(Collectors.toList()));
         }
 
-        public ConditionalActionsBuilder ifTrue(Predicate<BotMessage> condition) {
+        public ConditionalActionsBuilder ifTrue(Predicate<UserMessageContainer> condition) {
             final ConditionalActionsBuilder conditionalActionsBuilder = new ConditionalActionsBuilder(condition);
             this.conditionalActions.add(conditionalActionsBuilder);
             return conditionalActionsBuilder;
         }
 
-        public AnswerActionsBuilder peek(Consumer<BotMessage> consumer) {
+        public AnswerActionsBuilder peek(Consumer<UserMessageContainer> consumer) {
             this.peeks.add(consumer);
             return this;
         }
@@ -130,14 +130,14 @@ public class BotStepBuilder {
         }
 
         public class ConditionalActionsBuilder {
-            Predicate<BotMessage> condition;
+            Predicate<UserMessageContainer> condition;
             BotStepBuilder nextStep;
             String nextStepName;
-            final Map<Long, List<Function<BotMessage, BotMessageReply>>> replies = new HashMap<>();
-            final List<Consumer<BotMessage>> peeks = new ArrayList<>();
+            final Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies = new HashMap<>();
+            final List<Consumer<UserMessageContainer>> peeks = new ArrayList<>();
 
 
-            ConditionalActionsBuilder(Predicate<BotMessage> condition) {
+            ConditionalActionsBuilder(Predicate<UserMessageContainer> condition) {
                 this.condition = condition;
             }
 
@@ -147,22 +147,22 @@ public class BotStepBuilder {
                 return new ConditionalActions(replies, peeks, condition, nextStepNameResult);
             }
 
-            public ConditionalActionsBuilder nextStep(String stepName) {
+            public AnswerActionsBuilder nextStep(String stepName) {
                 this.nextStepName = stepName;
-                return this;
+                return AnswerActionsBuilder.this;
             }
 
-            public ConditionalActionsBuilder nextStep(BotStepBuilder stepName) {
+            public AnswerActionsBuilder nextStep(BotStepBuilder stepName) {
                 this.nextStep = stepName;
-                return this;
+                return AnswerActionsBuilder.this;
             }
 
-            public ConditionalActionsBuilder finish() {
+            public AnswerActionsBuilder finish() {
                 this.nextStep = null;
-                return this;
+                return AnswerActionsBuilder.this;
             }
 
-            public ConditionalActionsBuilder message(Function<BotMessage, BotMessageReply> message) {
+            public ConditionalActionsBuilder message(Function<UserMessageContainer, BotMessageReply> message) {
                 this.replies.computeIfAbsent(0L, s -> new ArrayList<>()).add(message);
                 return this;
             }
@@ -185,7 +185,7 @@ public class BotStepBuilder {
                 return this.message(new BotMessageReply(message), userId);
             }
 
-            public AnswerActionsBuilder also() {
+            public AnswerActionsBuilder endIf() {
                 return AnswerActionsBuilder.this;
             }
         }
