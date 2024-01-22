@@ -22,6 +22,16 @@ public class BotMessageConverterImpl implements BotMessageConverter {
                     .text(message.getText())
                     .build();
         }
+
+        if (update.hasCallbackQuery() && update.getCallbackQuery().getMessage() != null) {
+            final Message message = update.getCallbackQuery().getMessage();
+            return BotMessageBuilder.builder()
+                    .userId(update.getCallbackQuery().getFrom().getId())
+                    .chatId(message.getChatId())
+                    .messageId(message.getMessageId())
+                    .text(update.getCallbackQuery().getData())
+                    .build();
+        }
         return null;
     }
 }

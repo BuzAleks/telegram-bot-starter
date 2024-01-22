@@ -11,12 +11,15 @@ import java.util.function.Function;
 public class BaseStepActions {
     private final Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies;
     private final List<Consumer<UserMessageContainer>> peeks;
+    private final boolean clearLastMessage;
+
 
     public BaseStepActions(
             Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies,
-            List<Consumer<UserMessageContainer>> peeks) {
+            List<Consumer<UserMessageContainer>> peeks, boolean clearLastMessage) {
         this.replies = replies;
         this.peeks = peeks;
+        this.clearLastMessage = clearLastMessage;
     }
 
     public Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies() {
@@ -25,5 +28,9 @@ public class BaseStepActions {
 
     public List<Consumer<UserMessageContainer>> peeks() {
         return peeks;
+    }
+
+    public boolean clearLastMessage() {
+        return clearLastMessage;
     }
 }

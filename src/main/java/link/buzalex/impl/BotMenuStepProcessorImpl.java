@@ -5,6 +5,7 @@ import link.buzalex.api.BotMenuSectionsHolder;
 import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.UserContext;
 import link.buzalex.models.BotMessage;
+import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.menu.BotStep;
 import link.buzalex.models.menu.ConditionalActions;
 import link.buzalex.models.menu.MenuSection;
@@ -118,7 +119,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
         if (actions.answerActions() != null) {
             for (ConditionalActions conditionalAction : actions.answerActions().conditionalActions()) {
-                if (conditionalAction.condition().test(botMessage)) {
+                if (conditionalAction.condition().test(new UserMessageContainer(botMessage, userContext))) {
                     LOG.debug("Condition is being processed on step: " + actions.name());
                     actionsExecutor.execute(botMessage, userContext, conditionalAction);
                     nextStepName = conditionalAction.nextStepName();

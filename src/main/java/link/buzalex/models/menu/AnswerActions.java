@@ -12,8 +12,8 @@ public class AnswerActions extends BaseStepActions {
     private final String saveAs;
     private final List<ConditionalActions> conditionalActions;
 
-    public AnswerActions(Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies, List<Consumer<UserMessageContainer>> peeks, String saveAs, List<ConditionalActions> conditionalActions) {
-        super(replies, peeks);
+    public AnswerActions(Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies, List<Consumer<UserMessageContainer>> peeks, String saveAs, List<ConditionalActions> conditionalActions, boolean clearLastMessage) {
+        super(replies, peeks, clearLastMessage);
         this.saveAs = saveAs;
         this.conditionalActions = conditionalActions;
     }

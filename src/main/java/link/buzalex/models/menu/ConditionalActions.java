@@ -13,8 +13,8 @@ public class ConditionalActions extends BaseStepActions {
     private final Predicate<UserMessageContainer> condition;
     private final String nextStepName;
 
-    public ConditionalActions(Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies, List<Consumer<UserMessageContainer>> peeks, Predicate<UserMessageContainer> condition, String nextStepName) {
-        super(replies, peeks);
+    public ConditionalActions(Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies, List<Consumer<UserMessageContainer>> peeks, Predicate<UserMessageContainer> condition, String nextStepName, boolean clearLastMessage) {
+        super(replies, peeks, clearLastMessage);
         this.condition = condition;
         this.nextStepName = nextStepName;
     }

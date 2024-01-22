@@ -27,6 +27,9 @@ public class BotMenuActionsExecutorImpl implements BotMenuActionsExecutor {
         final UserMessageContainer userMessageContainer = new UserMessageContainer(botMessage, userContext);
         executeReplies(userMessageContainer, actions.replies());
         executePeeks(userMessageContainer, actions.peeks());
+        if (actions.clearLastMessage()) {
+            apiService.clear(botMessage.messageId(), botMessage.chatId());
+        }
     }
 
     private void executePeeks(UserMessageContainer botMessage, List<Consumer<UserMessageContainer>> peeks) {
@@ -39,8 +42,8 @@ public class BotMenuActionsExecutorImpl implements BotMenuActionsExecutor {
         for (Map.Entry<Long, List<Function<UserMessageContainer, BotMessageReply>>> replyEntry : replies.entrySet()) {
             Long userId = replyEntry.getKey() == 0L ? messageContainer.message().userId() : replyEntry.getKey();
             for (Function<UserMessageContainer, BotMessageReply> botMessageReply : replyEntry.getValue()) {
-                final BotMessageReply apply = botMessageReply.apply(messageContainer);
-                apiService.sendToUser(apply.text(), userId);
+                final BotMessageReply messageReply = botMessageReply.apply(messageContainer);
+                apiService.sendToUser(messageReply, userId);
             }
         }
     }

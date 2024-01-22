@@ -41,7 +41,6 @@ public class BotStepBuilder {
     class BaseStepActionsBuilder {
         final Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies = new HashMap<>();
         final List<Consumer<UserMessageContainer>> peeks = new ArrayList<>();
-
         public BotStepBuilder nextStep(String stepName) {
             BotStepBuilder.this.nextStepName = stepName;
             return BotStepBuilder.this;
@@ -60,11 +59,18 @@ public class BotStepBuilder {
 
     public class StepActionsBuilder extends BaseStepActionsBuilder {
 
+        boolean clearLastMessage;
+
         StepActionsBuilder() {
         }
 
         BaseStepActions build() {
-            return new BaseStepActions(replies, peeks);
+            return new BaseStepActions(replies, peeks, clearLastMessage);
+        }
+
+        public StepActionsBuilder clearLast() {
+            this.clearLastMessage = true;
+            return this;
         }
 
         public StepActionsBuilder message(Long user, Function<UserMessageContainer, BotMessageReply> message) {
@@ -83,7 +89,7 @@ public class BotStepBuilder {
         }
 
         public StepActionsBuilder message(String message) {
-            return this.message(new BotMessageReply(message));
+            return this.message(new BotMessageReply(message, null));
         }
 
         public StepActionsBuilder peek(Consumer<UserMessageContainer> peek) {
@@ -102,6 +108,7 @@ public class BotStepBuilder {
     public class AnswerActionsBuilder extends BaseStepActionsBuilder {
         String saveAs;
         final List<ConditionalActionsBuilder> conditionalActions = new ArrayList<>();
+        boolean clearLastMessage;
 
         AnswerActionsBuilder() {
         }
@@ -110,7 +117,7 @@ public class BotStepBuilder {
             return new AnswerActions(replies, peeks, saveAs,
                     conditionalActions.stream()
                             .map(ConditionalActionsBuilder::build)
-                            .collect(Collectors.toList()));
+                            .collect(Collectors.toList()), clearLastMessage);
         }
 
         public ConditionalActionsBuilder ifTrue(Predicate<UserMessageContainer> condition) {
@@ -118,7 +125,10 @@ public class BotStepBuilder {
             this.conditionalActions.add(conditionalActionsBuilder);
             return conditionalActionsBuilder;
         }
-
+        public AnswerActionsBuilder clearLast() {
+            this.clearLastMessage = true;
+            return this;
+        }
         public AnswerActionsBuilder peek(Consumer<UserMessageContainer> consumer) {
             this.peeks.add(consumer);
             return this;
@@ -144,7 +154,7 @@ public class BotStepBuilder {
             ConditionalActions build() {
                 String nextStepNameResult = nextStep == null ?
                         (nextStepName == null ? null : nextStepName) : nextStep.name;
-                return new ConditionalActions(replies, peeks, condition, nextStepNameResult);
+                return new ConditionalActions(replies, peeks, condition, nextStepNameResult, clearLastMessage);
             }
 
             public AnswerActionsBuilder nextStep(String stepName) {
@@ -173,7 +183,7 @@ public class BotStepBuilder {
             }
 
             public ConditionalActionsBuilder message(String message) {
-                return this.message(new BotMessageReply(message));
+                return this.message(new BotMessageReply(message,null));
             }
 
             public ConditionalActionsBuilder message(BotMessageReply message, Long userId) {
@@ -182,7 +192,7 @@ public class BotStepBuilder {
             }
 
             public ConditionalActionsBuilder message(String message, Long userId) {
-                return this.message(new BotMessageReply(message), userId);
+                return this.message(new BotMessageReply(message, null), userId);
             }
 
             public AnswerActionsBuilder endIf() {
