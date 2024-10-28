@@ -5,7 +5,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 public record BotMessageReply(
         String text, InlineKeyboardMarkup keyboard
 ) {
-
     public static BotMessageReplyBuilder builder() {
         return new BotMessageReplyBuilder();
     }
