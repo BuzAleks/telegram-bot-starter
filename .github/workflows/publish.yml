@@ -31,16 +31,19 @@ jobs:
 
       - name: Bump version and push tag
         id: versioning
-        uses: laputansoft/github-tag-action@v4.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.package-version.outputs.version }}
+        uses: anothrNick/github-tag-action@master
+        env:
+          VERBOSE: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          WITH_V: false
+          RELEASE_BRANCHES: master,develop
 
       - name: Publish to GitHub Packages
         env:
           GITHUB_USERNAME: ${{ secrets.GIT_USERNAME }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_VERSION: ${{ steps.versioning.outputs.new_tag }}
+          TAG_VERSION: ${{ steps.versioning.outputs.tag }}
         run: |
           ./gradlew clean build
           ./gradlew publish
