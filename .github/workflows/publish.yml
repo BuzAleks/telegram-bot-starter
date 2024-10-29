@@ -38,7 +38,7 @@ jobs:
           WITH_V: false
           RELEASE_BRANCHES: master
           PRERELEASE_SUFFIX: dev
-          PRERELEASE: ${{ github.ref_name == 'master' && 'true' || 'false' }}
+          PRERELEASE: ${{ github.ref_name == 'master' && 'false' || 'true' }}
 
       - name: Publish to GitHub Packages
         if: steps.versioning.outputs.old_tag != '' && steps.versioning.outputs.old_tag != 'null'
