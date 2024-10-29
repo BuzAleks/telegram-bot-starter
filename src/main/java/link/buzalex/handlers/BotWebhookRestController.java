@@ -1,8 +1,5 @@
 package link.buzalex.handlers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,10 +9,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RestController
 @ConditionalOnBean(TelegramWebhookHandler.class)
 public class BotWebhookRestController {
-    private static final Logger LOG = LoggerFactory.getLogger(BotWebhookRestController.class);
+    private final TelegramWebhookHandler telegramWebHookHandler;
 
-    @Autowired
-    private TelegramWebhookHandler telegramWebHookHandler;
+    public BotWebhookRestController(TelegramWebhookHandler telegramWebHookHandler) {
+        this.telegramWebHookHandler = telegramWebHookHandler;
+    }
 
     @PostMapping("${telegram.bot.webhook.path}")
     public void webhookHandle(@RequestBody Update update) {

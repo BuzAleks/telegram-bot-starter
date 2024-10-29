@@ -19,7 +19,6 @@ public class ConditionalActions extends BaseStepActions {
         this.nextStepName = nextStepName;
     }
 
-
     public Predicate<UserMessageContainer> condition() {
         return condition;
     }
