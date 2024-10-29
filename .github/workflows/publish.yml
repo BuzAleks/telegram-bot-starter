@@ -40,6 +40,7 @@ jobs:
           RELEASE_BRANCHES: master,develop
 
       - name: Publish to GitHub Packages
+        if: steps.versioning.outputs.old_tag != '' && steps.versioning.outputs.old_tag != 'null'
         env:
           GITHUB_USERNAME: ${{ secrets.GIT_USERNAME }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
