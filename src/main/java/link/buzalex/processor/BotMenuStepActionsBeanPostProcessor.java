@@ -8,9 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 @Component
+@DependsOn("botMenuSectionsHolderImpl")
 public class BotMenuStepActionsBeanPostProcessor implements BeanPostProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(BotMenuStepActionsBeanPostProcessor.class);
 
