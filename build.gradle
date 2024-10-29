@@ -6,15 +6,17 @@ plugins {
 }
 apply plugin: 'maven-publish'
 
-group 'com.link.buzaleks'
-version System.getenv("TAG_VERSION")
+group 'link.buzalex'
+version System.getenv("TAG_VERSION") ?: '0.0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
+
 bootJar {
     enabled = false
 }
+
 java {
     sourceCompatibility = '17'
     withSourcesJar()
@@ -30,7 +32,6 @@ dependencies {
     implementation 'org.telegram:telegrambots-spring-boot-starter:6.8.0'
     implementation 'org.yaml:snakeyaml'
     implementation 'one.util:streamex:0.8.2'
-
 }
 
 test {
@@ -43,6 +44,7 @@ publishing {
             from(components.java)
         }
     }
+
     repositories {
         maven {
             name = "GitHubPackages"
