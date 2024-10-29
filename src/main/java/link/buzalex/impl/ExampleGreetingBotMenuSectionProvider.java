@@ -7,8 +7,6 @@ import link.buzalex.models.menu.BotStepBuilder;
 import link.buzalex.models.menu.MenuSection;
 import link.buzalex.models.menu.MenuSectionBuilder;
 import one.util.streamex.StreamEx;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -16,8 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
-@ConditionalOnMissingBean(value = BotMenuSectionProvider.class, ignored = ExampleGreetingBotMenuSectionProvider.class)
 public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProvider<UserContextImpl> {
 
     @Override
