@@ -2,12 +2,11 @@ name: Build and Release
 on:
   push:
     branches:
-      - 'develop'  # Trigger on pushes to the develop and release branches
-      - 'master'
+      - master
+      - develop
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -31,13 +30,15 @@ jobs:
 
       - name: Bump version and push tag
         id: versioning
-        uses: anothrNick/github-tag-action@master
+        uses: anothrNick/github-tag-action@1.71.0
         env:
           VERBOSE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           WITH_V: false
-          RELEASE_BRANCHES: master,develop
+          RELEASE_BRANCHES: master
+          PRERELEASE_SUFFIX: dev
+          PRERELEASE: ${{ github.ref_name == 'master' && 'true' || 'false' }}
 
       - name: Publish to GitHub Packages
         if: steps.versioning.outputs.old_tag != '' && steps.versioning.outputs.old_tag != 'null'
