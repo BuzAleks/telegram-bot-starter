@@ -20,7 +20,7 @@ public class BotMenuStepActionsBeanPostProcessor implements BeanPostProcessor {
     private BotMenuSectionsHolder stepsHolder;
 
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof BotMenuSectionProvider) {
             MenuSection menuSection = ((BotMenuSectionProvider<?>) bean).provideMenuSection();
             stepsHolder.putMenuSection(menuSection);
