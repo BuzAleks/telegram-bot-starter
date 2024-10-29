@@ -1,5 +1,4 @@
 name: Build and Release
-
 on:
   push:
     branches:
@@ -22,12 +21,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Configure Git Credentials
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
         with:
@@ -35,11 +28,15 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
       - name: Bump version and push tag
         uses: laputansoft/github-tag-action@v4.6
         id: versioning
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          VERBOSE: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_API_TAGGING: false # uses git cli
+
       - name: Publish to GitHub Packages
         env:
           GITHUB_USERNAME: ${{ secrets.GIT_USERNAME }}
