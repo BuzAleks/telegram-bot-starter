@@ -1,9 +1,9 @@
 name: Build and Release
 on:
-  push:
+  pull_request:
     branches:
-      - 'develop'  # Trigger on pushes to the develop and release branches
-      - 'master'
+      - master
+      - develop
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           WITH_V: false
-          RELEASE_BRANCHES: master,develop
+          RELEASE_BRANCHES: master
 
       - name: Publish to GitHub Packages
         if: steps.versioning.outputs.old_tag != '' && steps.versioning.outputs.old_tag != 'null'
