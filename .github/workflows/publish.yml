@@ -30,12 +30,11 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Bump version and push tag
-        uses: laputansoft/github-tag-action@v4.6
         id: versioning
-        env:
-          VERBOSE: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_API_TAGGING: false # uses git cli
+        uses: laputansoft/github-tag-action@v4.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.package-version.outputs.version }}
 
       - name: Publish to GitHub Packages
         env:
