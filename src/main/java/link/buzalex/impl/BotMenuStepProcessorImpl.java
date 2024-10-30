@@ -58,6 +58,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             while (step.answerActions() == null) {
                 if (step.nextStepName() == null) {
                     finishMenu(user);
+                    break;
                 } else {
                     pushNextStep(user, step.nextStepName());
                     step = stepsHolder.getStep(menuSection, step.nextStepName());
