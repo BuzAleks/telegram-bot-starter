@@ -126,7 +126,6 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
                     nextStepName = conditionalAction.nextStepName();
                     if (conditionalAction.nextStepName() == null) {
                         LOG.debug("Condition finished");
-                        return null;
                     }
                     break;
                 }
