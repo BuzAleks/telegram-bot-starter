@@ -4,6 +4,7 @@ import link.buzalex.api.BotMessageConverter;
 import link.buzalex.models.BotMessage;
 import link.buzalex.models.BotMessageBuilder;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.MaybeInaccessibleMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -24,7 +25,7 @@ public class BotMessageConverterImpl implements BotMessageConverter {
         }
 
         if (update.hasCallbackQuery() && update.getCallbackQuery().getMessage() != null) {
-            final Message message = update.getCallbackQuery().getMessage();
+            final MaybeInaccessibleMessage message = update.getCallbackQuery().getMessage();
             return BotMessageBuilder.builder()
                     .userId(update.getCallbackQuery().getFrom().getId())
                     .chatId(message.getChatId())
