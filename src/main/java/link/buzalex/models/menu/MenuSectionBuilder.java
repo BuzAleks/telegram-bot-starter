@@ -1,10 +1,13 @@
 package link.buzalex.models.menu;
 
+import link.buzalex.api.BotMenuStepBuilder;
 import link.buzalex.exception.BotMenuStepInitializationException;
 import link.buzalex.models.BotMessage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public final class MenuSectionBuilder {
@@ -13,6 +16,7 @@ public final class MenuSectionBuilder {
     private int order;
     private String rootStepName;
     private Map<String, BotStep> steps = new HashMap<>();
+    private Set<BotStepBuilder> stepBuiders = new HashSet<>();
 
     private MenuSectionBuilder(String name) {
         this.name = name;
@@ -40,7 +44,7 @@ public final class MenuSectionBuilder {
     }
 
     private void collect(BotStepBuilder step) {
-        if (steps.containsKey(step.name)) throw new BotMenuStepInitializationException(String.format("Step name '%s' are duplicate", step.name));
+        stepBuiders.add(step);
         steps.put(step.name, step.build());
         if (step.answerActions != null) {
             for (BotStepBuilder.AnswerActionsBuilder.ConditionalActionsBuilder conditionalAction : step.answerActions.conditionalActions) {
@@ -52,12 +56,10 @@ public final class MenuSectionBuilder {
         collect(step.nextStep);
     }
 
-    private boolean isFinishOrDuplicate(BotStepBuilder.AnswerActionsBuilder.ConditionalActionsBuilder step) {
-        return step.nextStep == null || steps.containsKey(step.nextStep.name);
-    }
+    private boolean isFinishOrDuplicate(BotMenuStepBuilder step) {
+        if (stepBuiders.contains(step.getNextStep())) throw new BotMenuStepInitializationException(String.format("Step name '%s' are duplicate", step.getNextStep().name));
 
-    private boolean isFinishOrDuplicate(BotStepBuilder step) {
-        return step.nextStep == null || steps.containsKey(step.nextStep.name);
+        return step.getNextStep() == null || steps.containsKey(step.getNextStep().name);
     }
 
     public MenuSection build() {

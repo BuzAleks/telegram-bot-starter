@@ -1,5 +1,6 @@
 package link.buzalex.models.menu;
 
+import link.buzalex.api.BotMenuStepBuilder;
 import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.BotMessageReply;
 
@@ -12,7 +13,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class BotStepBuilder {
+public class BotStepBuilder implements BotMenuStepBuilder{
     String name;
     BotStepBuilder nextStep;
     String nextStepName;
@@ -36,6 +37,11 @@ public class BotStepBuilder {
         final BotStepBuilder botStepBuilder = new BotStepBuilder(stepName);
         botStepBuilder.stepActions = botStepBuilder.new StepActionsBuilder();
         return botStepBuilder.stepActions;
+    }
+
+    @Override
+    public BotStepBuilder getNextStep() {
+        return this.nextStep;
     }
 
     class BaseStepActionsBuilder {
@@ -139,7 +145,7 @@ public class BotStepBuilder {
             return this;
         }
 
-        public class ConditionalActionsBuilder {
+        public class ConditionalActionsBuilder implements BotMenuStepBuilder {
             Predicate<UserMessageContainer> condition;
             BotStepBuilder nextStep;
             String nextStepName;
@@ -197,6 +203,11 @@ public class BotStepBuilder {
 
             public AnswerActionsBuilder endIf() {
                 return AnswerActionsBuilder.this;
+            }
+
+            @Override
+            public BotStepBuilder getNextStep() {
+                return this.nextStep;
             }
         }
     }
