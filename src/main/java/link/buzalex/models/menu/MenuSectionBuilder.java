@@ -1,5 +1,6 @@
 package link.buzalex.models.menu;
 
+import link.buzalex.exception.BotMenuStepInitializationException;
 import link.buzalex.models.BotMessage;
 
 import java.util.HashMap;
@@ -39,6 +40,7 @@ public final class MenuSectionBuilder {
     }
 
     private void collect(BotStepBuilder step) {
+        if (steps.containsKey(step.name)) throw new BotMenuStepInitializationException(String.format("Step name '%s' are duplicate", step.name));
         steps.put(step.name, step.build());
         if (step.answerActions != null) {
             for (BotStepBuilder.AnswerActionsBuilder.ConditionalActionsBuilder conditionalAction : step.answerActions.conditionalActions) {
