@@ -60,8 +60,8 @@ public final class MenuSectionBuilder {
         boolean nextStepExists = step.getNextStep() != null;
         boolean nextStepNameAlreadyKnown = steps.containsKey(step.getNextStepName());
         boolean nextStepObjectAlreadyKnown = nextStepExists && stepBuiders.contains(step.getNextStep());
-        if (nextStepNameAlreadyKnown && !nextStepObjectAlreadyKnown)
-            throw new BotMenuStepInitializationException(String.format("Step name '%s' are duplicate", step.getNextStep().name));
+        if (nextStepExists && nextStepNameAlreadyKnown && !nextStepObjectAlreadyKnown)
+            throw new BotMenuStepInitializationException(String.format("Step name '%s' are duplicate", step.getNextStepName()));
         return !nextStepExists || nextStepNameAlreadyKnown;
     }
 
