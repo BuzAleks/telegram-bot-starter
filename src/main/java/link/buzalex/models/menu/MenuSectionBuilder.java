@@ -57,9 +57,12 @@ public final class MenuSectionBuilder {
     }
 
     private boolean isFinishOrDuplicate(BotMenuStepBuilder step) {
-        if (stepBuiders.contains(step.getNextStep())) throw new BotMenuStepInitializationException(String.format("Step name '%s' are duplicate", step.getNextStep().name));
-
-        return step.getNextStep() == null || steps.containsKey(step.getNextStep().name);
+        boolean nextStepExists = step.getNextStep() != null;
+        boolean nextStepNameAlreadyKnown = steps.containsKey(step.getNextStepName());
+        boolean nextStepObjectAlreadyKnown = nextStepExists && stepBuiders.contains(step.getNextStep());
+        if (nextStepNameAlreadyKnown && !nextStepObjectAlreadyKnown)
+            throw new BotMenuStepInitializationException(String.format("Step name '%s' are duplicate", step.getNextStep().name));
+        return !nextStepExists || nextStepNameAlreadyKnown;
     }
 
     public MenuSection build() {

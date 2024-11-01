@@ -3,6 +3,7 @@ package link.buzalex.models.menu;
 import link.buzalex.api.BotMenuStepBuilder;
 import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.BotMessageReply;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,18 +26,26 @@ public class BotStepBuilder implements BotMenuStepBuilder{
     }
 
     BotStep build() {
-        String nextStepNameResult = nextStep == null ?
-                (nextStepName == null ? null : nextStepName) : nextStep.name;
+        String nextStepNameResult = getNextStepNameResult();
         BaseStepActions stepActionsResult = stepActions == null ? null : stepActions.build();
         AnswerActions answerActionsResult = answerActions == null ? null : answerActions.build();
         return new BotStep(name, stepActionsResult, answerActionsResult, nextStepNameResult);
     }
 
+    private String getNextStepNameResult() {
+        return nextStep == null ?
+                (nextStepName == null ? null : nextStepName) : nextStep.name;
+    }
 
     public static StepActionsBuilder name(String stepName) {
         final BotStepBuilder botStepBuilder = new BotStepBuilder(stepName);
         botStepBuilder.stepActions = botStepBuilder.new StepActionsBuilder();
         return botStepBuilder.stepActions;
+    }
+
+    @Override
+    public String getNextStepName() {
+        return getNextStepNameResult();
     }
 
     @Override
@@ -158,9 +167,13 @@ public class BotStepBuilder implements BotMenuStepBuilder{
             }
 
             ConditionalActions build() {
-                String nextStepNameResult = nextStep == null ?
-                        (nextStepName == null ? null : nextStepName) : nextStep.name;
+                String nextStepNameResult = getNextStepNameResult();
                 return new ConditionalActions(replies, peeks, condition, nextStepNameResult, clearLastMessage);
+            }
+
+            private String getNextStepNameResult() {
+                return nextStep == null ?
+                        (nextStepName == null ? null : nextStepName) : nextStep.name;
             }
 
             public AnswerActionsBuilder nextStep(String stepName) {
@@ -203,6 +216,11 @@ public class BotStepBuilder implements BotMenuStepBuilder{
 
             public AnswerActionsBuilder endIf() {
                 return AnswerActionsBuilder.this;
+            }
+
+            @Override
+            public String getNextStepName() {
+                return getNextStepNameResult();
             }
 
             @Override
