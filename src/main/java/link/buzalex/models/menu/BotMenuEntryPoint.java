@@ -5,7 +5,7 @@ import link.buzalex.models.BotMessage;
 import java.util.Map;
 import java.util.function.Predicate;
 
-public record MenuSection(
+public record BotMenuEntryPoint(
         String name,
         Predicate<BotMessage> selector,
         int order,

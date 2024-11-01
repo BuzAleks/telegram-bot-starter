@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public final class MenuSectionBuilder {
+public final class BotMenuEntryPointBuilder {
     private String name;
     private Predicate<BotMessage> selector;
     private int order;
@@ -18,26 +18,26 @@ public final class MenuSectionBuilder {
     private Map<String, BotStep> steps = new HashMap<>();
     private Set<BotStepBuilder> stepBuiders = new HashSet<>();
 
-    private MenuSectionBuilder(String name) {
+    private BotMenuEntryPointBuilder(String name) {
         this.name = name;
     }
 
-    public static MenuSectionBuilder name(String name) {
-        return new MenuSectionBuilder(name);
+    public static BotMenuEntryPointBuilder name(String name) {
+        return new BotMenuEntryPointBuilder(name);
     }
 
 
-    public MenuSectionBuilder selector(Predicate<BotMessage> selector) {
+    public BotMenuEntryPointBuilder selector(Predicate<BotMessage> selector) {
         this.selector = selector;
         return this;
     }
 
-    public MenuSectionBuilder order(int order) {
+    public BotMenuEntryPointBuilder order(int order) {
         this.order = order;
         return this;
     }
 
-    public MenuSectionBuilder steps(BotStepBuilder steps) {
+    public BotMenuEntryPointBuilder steps(BotStepBuilder steps) {
         collect(steps);
         this.rootStepName = steps.name;
         return this;
@@ -65,7 +65,7 @@ public final class MenuSectionBuilder {
         return !nextStepExists || nextStepNameAlreadyKnown;
     }
 
-    public MenuSection build() {
-        return new MenuSection(name, selector, order, rootStepName, steps);
+    public BotMenuEntryPoint build() {
+        return new BotMenuEntryPoint(name, selector, order, rootStepName, steps);
     }
 }

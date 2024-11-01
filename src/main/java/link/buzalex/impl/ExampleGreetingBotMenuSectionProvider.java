@@ -4,8 +4,8 @@ import link.buzalex.api.BotMenuSectionProvider;
 import link.buzalex.models.BotMessageReply;
 import link.buzalex.models.UserContextImpl;
 import link.buzalex.models.menu.BotStepBuilder;
-import link.buzalex.models.menu.MenuSection;
-import link.buzalex.models.menu.MenuSectionBuilder;
+import link.buzalex.models.menu.BotMenuEntryPoint;
+import link.buzalex.models.menu.BotMenuEntryPointBuilder;
 import one.util.streamex.StreamEx;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProvider<UserContextImpl> {
 
     @Override
-    public MenuSection provideMenuSection() {
+    public BotMenuEntryPoint provideMenuSection() {
         // TODO: 16.01.2024 Add keyboard row and col methods to add keyboard
         // TODO: 16.01.2024 add methods for operating with last message (remove, edit)
         // TODO: 16.01.2024 add steps reuse feature, rootStep as string and annotation for step adding
@@ -29,7 +29,7 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
         // TODO: 16.01.2024 Try to generify UserMessageContainer to work with UserContext inheritance
         // TODO: 16.01.2024 add waitAnswer method with waiting time and do smth on timeout (maybe we need timestamp)
         // TODO: 16.01.2024 add method sleep() with sleep time as parameter
-        return MenuSectionBuilder
+        return BotMenuEntryPointBuilder
                 .name("first")
                 .selector(s -> "/start".equals(s.text()))
                 .steps(nextStep())

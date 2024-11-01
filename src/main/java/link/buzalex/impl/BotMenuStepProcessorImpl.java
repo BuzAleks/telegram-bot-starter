@@ -8,7 +8,7 @@ import link.buzalex.models.BotMessage;
 import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.menu.BotStep;
 import link.buzalex.models.menu.ConditionalActions;
-import link.buzalex.models.menu.MenuSection;
+import link.buzalex.models.menu.BotMenuEntryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -89,21 +89,21 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
     }
 
     private String determineMenuSection(BotMessage message, UserContext user) {
-        MenuSection menuSection = null;
+        BotMenuEntryPoint botMenuEntryPoint = null;
         if (user.getMenuSection() == null) {
             Integer minOrder = null;
-            for (MenuSection botAction : stepsHolder.getMenuSections().values()) {
+            for (BotMenuEntryPoint botAction : stepsHolder.getMenuSections().values()) {
                 if (botAction.selector().test(message)) {
                     if (minOrder == null || botAction.order() < minOrder) {
                         minOrder = botAction.order();
-                        menuSection = botAction;
+                        botMenuEntryPoint = botAction;
                     }
                 }
             }
         }
-        if (menuSection != null) {
-            LOG.debug("Chosen menu section: " + menuSection.name());
-            user.setMenuSection(menuSection.name());
+        if (botMenuEntryPoint != null) {
+            LOG.debug("Chosen menu section: " + botMenuEntryPoint.name());
+            user.setMenuSection(botMenuEntryPoint.name());
         }
         return user.getMenuSection();
     }
