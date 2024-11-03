@@ -6,6 +6,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class BotUtils {
@@ -36,5 +38,41 @@ public class BotUtils {
 
         replyKeyboardMarkup.setKeyboard(keyboard);
         return replyKeyboardMarkup;
+    }
+
+    public static List<List<Pair<String, String>>> convertStringToKeyboard(String input) {
+        List<List<Pair<String, String>>> result = new ArrayList<>();
+
+        // Pattern to match strings with `{}` format
+        Pattern pattern = Pattern.compile("(.+?)\\{(.+?)\\}");
+
+        // Split input by new lines
+        String[] lines = input.split("\\n");
+
+        for (String line : lines) {
+            List<Pair<String, String>> innerList = new ArrayList<>();
+
+            // Split each line by '|' delimiter
+            String[] tokens = line.split("\\|");
+
+            for (String token : tokens) {
+                token = token.trim();
+
+                Matcher matcher = pattern.matcher(token);
+                if (matcher.matches()) {
+                    // If token matches pattern, extract key and value
+                    String key = matcher.group(1).trim();
+                    String value = matcher.group(2).trim();
+                    innerList.add(Pair.of(key, value));
+                } else {
+                    // If no `{}`, use the token itself as key and value
+                    innerList.add(Pair.of(token, token));
+                }
+            }
+
+            result.add(innerList);
+        }
+
+        return result;
     }
 }

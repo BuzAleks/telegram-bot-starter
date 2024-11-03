@@ -11,20 +11,20 @@ import java.util.function.Predicate;
 
 public class ConditionalActions extends BaseStepActions {
     private final Predicate<UserMessageContainer> condition;
-    private final String nextStepName;
+    private final BotStepsChain nextStep;
 
-    public ConditionalActions(Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies, List<Consumer<UserMessageContainer>> peeks, Predicate<UserMessageContainer> condition, String nextStepName, boolean clearLastMessage) {
+    public ConditionalActions(Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies, List<Consumer<UserMessageContainer>> peeks, Predicate<UserMessageContainer> condition, BotStepsChain nextStep, boolean clearLastMessage) {
         super(replies, peeks, clearLastMessage);
         this.condition = condition;
-        this.nextStepName = nextStepName;
+        this.nextStep = nextStep;
     }
 
     public Predicate<UserMessageContainer> condition() {
         return condition;
     }
 
-    public String nextStepName() {
-        return nextStepName;
+    public BotStepsChain nextStep() {
+        return nextStep;
     }
 
 }

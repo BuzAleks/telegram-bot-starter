@@ -1,14 +1,11 @@
 package link.buzalex.impl;
 
-import link.buzalex.api.BotMenuSectionProvider;
 import link.buzalex.models.BotMessageReply;
-import link.buzalex.models.UserContextImpl;
+import link.buzalex.models.menu.BotEntryPoint;
+import link.buzalex.models.menu.BotEntryPointBuilder;
 import link.buzalex.models.menu.BotStepBuilder;
-import link.buzalex.models.menu.BotMenuEntryPoint;
-import link.buzalex.models.menu.BotMenuEntryPointBuilder;
+import link.buzalex.models.menu.BotStepsChain;
 import one.util.streamex.StreamEx;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -16,12 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
-@ConditionalOnMissingBean(value = BotMenuSectionProvider.class, ignored = ExampleGreetingBotMenuSectionProvider.class)
-public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProvider<UserContextImpl> {
+public class ExampleGreetingBotMenuSectionProvider {
 
-    @Override
-    public BotMenuEntryPoint provideMenuSection() {
+    public BotEntryPoint provideMenuSection() {
         // TODO: 16.01.2024 Add keyboard row and col methods to add keyboard
         // TODO: 16.01.2024 add methods for operating with last message (remove, edit)
         // TODO: 16.01.2024 add steps reuse feature, rootStep as string and annotation for step adding
@@ -29,16 +23,20 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
         // TODO: 16.01.2024 Try to generify UserMessageContainer to work with UserContext inheritance
         // TODO: 16.01.2024 add waitAnswer method with waiting time and do smth on timeout (maybe we need timestamp)
         // TODO: 16.01.2024 add method sleep() with sleep time as parameter
-        return BotMenuEntryPointBuilder
+        return BotEntryPointBuilder
                 .name("first")
                 .selector(s -> "/start".equals(s.text()))
-                .steps(nextStep())
+                .rootStep("rootStep")
                 .build();
     }
 
-    public BotStepBuilder nextStep() {
-        return BotStepBuilder
-                .name("nextStep")
+    public BotStepsChain getBotStepsChain() {
+        return rootStep();
+    }
+
+    public BotStepsChain rootStep() {
+        return BotStepsChain
+                .withName("rootStep")
                 .peek(s -> s.context().getData().put("initYear", "1995"))
                 .message("What's your name?")
                 .waitAnswer()
@@ -46,7 +44,7 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
                 .nextStep(nextStep2());
     }
 
-    public BotStepBuilder nextStep2() {
+    public BotStepsChain nextStep2() {
         return BotStepBuilder
                 .name("nextStep2")
 
@@ -66,7 +64,7 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
                 .nextStep(month());
     }
 
-    public BotStepBuilder minus() {
+    public BotStepsChain minus() {
         return BotStepBuilder
                 .name("minus")
                 .peek(s -> {
@@ -74,10 +72,10 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
                     s.context().getData().put("initYear", Integer.toString(initYear));
                 })
                 .clearLast()
-                .nextStep("nextStep2");
+                .nextStep(null);
     }
 
-    public BotStepBuilder plus() {
+    public BotStepsChain plus() {
         return BotStepBuilder
                 .name("plus")
                 .peek(s -> {
@@ -85,10 +83,10 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
                     s.context().getData().put("initYear", Integer.toString(initYear));
                 })
                 .clearLast()
-                .nextStep("nextStep2");
+                .nextStep(null);
     }
 
-    public BotStepBuilder month() {
+    public BotStepsChain month() {
         return BotStepBuilder
                 .name("month")
                 .clearLast()
@@ -104,7 +102,7 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
                 .nextStep(day());
     }
 
-    public BotStepBuilder day() {
+    public BotStepsChain day() {
         return BotStepBuilder
                 .name("day")
                 .clearLast()
@@ -132,12 +130,12 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
                 })
                 .waitAnswer()
                 .clearLast()
-                .ifTrue(s -> s.message().text().equals("-")).nextStep("month")
+                .ifTrue(s -> s.message().text().equals("-")).nextStep(null)
                 .saveAs("day")
                 .nextStep(greeting());
     }
 
-    public BotStepBuilder greeting() {
+    public BotStepsChain greeting() {
         return BotStepBuilder
                 .name("greeting")
                 .clearLast()
@@ -157,8 +155,6 @@ public class ExampleGreetingBotMenuSectionProvider implements BotMenuSectionProv
 
                     return BotMessageReply.builder().text(hi_).build();
                 })
-                .waitAnswer()
                 .finish();
     }
-
 }

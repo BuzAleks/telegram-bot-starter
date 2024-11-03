@@ -1,9 +1,7 @@
 package link.buzalex.models.menu;
 
-import link.buzalex.api.BotMenuStepBuilder;
-import link.buzalex.models.UserMessageContainer;
 import link.buzalex.models.BotMessageReply;
-import org.jetbrains.annotations.Nullable;
+import link.buzalex.models.UserMessageContainer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,10 +12,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class BotStepBuilder implements BotMenuStepBuilder{
+public class BotStepBuilder {
     String name;
-    BotStepBuilder nextStep;
-    String nextStepName;
+    BotStepsChain nextStep;
     StepActionsBuilder stepActions;
     AnswerActionsBuilder answerActions;
 
@@ -25,16 +22,10 @@ public class BotStepBuilder implements BotMenuStepBuilder{
         this.name = name;
     }
 
-    BotStep build() {
-        String nextStepNameResult = getNextStepNameResult();
+    BotStepsChain build() {
         BaseStepActions stepActionsResult = stepActions == null ? null : stepActions.build();
         AnswerActions answerActionsResult = answerActions == null ? null : answerActions.build();
-        return new BotStep(name, stepActionsResult, answerActionsResult, nextStepNameResult);
-    }
-
-    private String getNextStepNameResult() {
-        return nextStep == null ?
-                (nextStepName == null ? null : nextStepName) : nextStep.name;
+        return new BotStepsChain(name, stepActionsResult, answerActionsResult, nextStep);
     }
 
     public static StepActionsBuilder name(String stepName) {
@@ -43,32 +34,18 @@ public class BotStepBuilder implements BotMenuStepBuilder{
         return botStepBuilder.stepActions;
     }
 
-    @Override
-    public String getNextStepName() {
-        return getNextStepNameResult();
-    }
-
-    @Override
-    public BotStepBuilder getNextStep() {
-        return this.nextStep;
-    }
-
     class BaseStepActionsBuilder {
         final Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies = new HashMap<>();
         final List<Consumer<UserMessageContainer>> peeks = new ArrayList<>();
-        public BotStepBuilder nextStep(String stepName) {
-            BotStepBuilder.this.nextStepName = stepName;
-            return BotStepBuilder.this;
-        }
 
-        public BotStepBuilder nextStep(BotStepBuilder nextStep) {
+        public BotStepsChain nextStep(BotStepsChain nextStep) {
             BotStepBuilder.this.nextStep = nextStep;
-            return BotStepBuilder.this;
+            return build();
         }
 
-        public BotStepBuilder finish() {
-            BotStepBuilder.this.nextStepName = null;
-            return BotStepBuilder.this;
+        public BotStepsChain finish() {
+            BotStepBuilder.this.nextStep = null;
+            return build();
         }
     }
 
@@ -140,10 +117,12 @@ public class BotStepBuilder implements BotMenuStepBuilder{
             this.conditionalActions.add(conditionalActionsBuilder);
             return conditionalActionsBuilder;
         }
+
         public AnswerActionsBuilder clearLast() {
             this.clearLastMessage = true;
             return this;
         }
+
         public AnswerActionsBuilder peek(Consumer<UserMessageContainer> consumer) {
             this.peeks.add(consumer);
             return this;
@@ -154,10 +133,9 @@ public class BotStepBuilder implements BotMenuStepBuilder{
             return this;
         }
 
-        public class ConditionalActionsBuilder implements BotMenuStepBuilder {
+        public class ConditionalActionsBuilder {
             Predicate<UserMessageContainer> condition;
-            BotStepBuilder nextStep;
-            String nextStepName;
+            BotStepsChain nextStep;
             final Map<Long, List<Function<UserMessageContainer, BotMessageReply>>> replies = new HashMap<>();
             final List<Consumer<UserMessageContainer>> peeks = new ArrayList<>();
 
@@ -167,21 +145,10 @@ public class BotStepBuilder implements BotMenuStepBuilder{
             }
 
             ConditionalActions build() {
-                String nextStepNameResult = getNextStepNameResult();
-                return new ConditionalActions(replies, peeks, condition, nextStepNameResult, clearLastMessage);
+                return new ConditionalActions(replies, peeks, condition, nextStep, clearLastMessage);
             }
 
-            private String getNextStepNameResult() {
-                return nextStep == null ?
-                        (nextStepName == null ? null : nextStepName) : nextStep.name;
-            }
-
-            public AnswerActionsBuilder nextStep(String stepName) {
-                this.nextStepName = stepName;
-                return AnswerActionsBuilder.this;
-            }
-
-            public AnswerActionsBuilder nextStep(BotStepBuilder stepName) {
+            public AnswerActionsBuilder nextStep(BotStepsChain stepName) {
                 this.nextStep = stepName;
                 return AnswerActionsBuilder.this;
             }
@@ -202,7 +169,7 @@ public class BotStepBuilder implements BotMenuStepBuilder{
             }
 
             public ConditionalActionsBuilder message(String message) {
-                return this.message(new BotMessageReply(message,null));
+                return this.message(new BotMessageReply(message, null));
             }
 
             public ConditionalActionsBuilder message(BotMessageReply message, Long userId) {
@@ -216,16 +183,6 @@ public class BotStepBuilder implements BotMenuStepBuilder{
 
             public AnswerActionsBuilder endIf() {
                 return AnswerActionsBuilder.this;
-            }
-
-            @Override
-            public String getNextStepName() {
-                return getNextStepNameResult();
-            }
-
-            @Override
-            public BotStepBuilder getNextStep() {
-                return this.nextStep;
             }
         }
     }

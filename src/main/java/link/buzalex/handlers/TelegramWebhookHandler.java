@@ -56,7 +56,7 @@ public class TelegramWebhookHandler extends TelegramWebhookBot {
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         try {
-            LOG.debug("Handled message: " + update.toString());
+            LOG.debug("Handled message: {}", update.toString());
             final BotMessage botMessage = messageMapper.convert(update);
             menuManager.handleMessage(botMessage);
         } catch (Exception e) {
