@@ -3,8 +3,7 @@ package link.buzalex.impl;
 import link.buzalex.models.BotMessageReply;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.menu.BotEntryPointBuilder;
-import link.buzalex.models.menu.BotStepBuilder;
-import link.buzalex.models.menu.BotStepsChain;
+import link.buzalex.models.step.BotStepsChain;
 import one.util.streamex.StreamEx;
 
 import java.time.LocalDate;
@@ -35,9 +34,9 @@ public class ExampleGreetingBotMenuSectionProvider {
     }
 
     public BotStepsChain rootStep() {
-        return BotStepsChain
-                .withName("rootStep")
-                .peek(s -> s.context().getData().put("initYear", "1995"))
+        return BotStepsChain.builder()
+                .name("rootStep")
+                .execute(s -> s.context().getData().put("initYear", "1995"))
                 .message("What's your name?")
                 .waitAnswer()
                 .saveAs("name")
@@ -45,7 +44,7 @@ public class ExampleGreetingBotMenuSectionProvider {
     }
 
     public BotStepsChain nextStep2() {
-        return BotStepBuilder
+        return BotStepsChain.builder()
                 .name("nextStep2")
 
                 .message(s -> {
@@ -65,31 +64,31 @@ public class ExampleGreetingBotMenuSectionProvider {
     }
 
     public BotStepsChain minus() {
-        return BotStepBuilder
+        return BotStepsChain.builder()
                 .name("minus")
-                .peek(s -> {
+                .execute(s -> {
                     int initYear = Integer.parseInt(s.context().getData().get("initYear")) - 3;
                     s.context().getData().put("initYear", Integer.toString(initYear));
                 })
-                .clearLast()
+                .removeLastMessage()
                 .nextStep(null);
     }
 
     public BotStepsChain plus() {
-        return BotStepBuilder
+        return BotStepsChain.builder()
                 .name("plus")
-                .peek(s -> {
+                .execute(s -> {
                     int initYear = Integer.parseInt(s.context().getData().get("initYear")) + 3;
                     s.context().getData().put("initYear", Integer.toString(initYear));
                 })
-                .clearLast()
+                .removeLastMessage()
                 .nextStep(null);
     }
 
     public BotStepsChain month() {
-        return BotStepBuilder
+        return BotStepsChain.builder()
                 .name("month")
-                .clearLast()
+                .removeLastMessage()
                 .message(s -> {
                     final List<Object> months = Arrays.stream(Month.values()).map(Enum::name).map(t -> (Object) t).collect(Collectors.toList());
                     return BotMessageReply.builder()
@@ -103,9 +102,9 @@ public class ExampleGreetingBotMenuSectionProvider {
     }
 
     public BotStepsChain day() {
-        return BotStepBuilder
+        return BotStepsChain.builder()
                 .name("day")
-                .clearLast()
+                .removeLastMessage()
                 .message(s -> {
                     final Integer year = Integer.parseInt(s.context().getData().get("year"));
                     final String month = s.context().getData().get("month");
@@ -129,16 +128,16 @@ public class ExampleGreetingBotMenuSectionProvider {
                             .build();
                 })
                 .waitAnswer()
-                .clearLast()
+                .removeLastMessage()
                 .ifTrue(s -> s.message().text().equals("-")).nextStep(null)
                 .saveAs("day")
                 .nextStep(greeting());
     }
 
     public BotStepsChain greeting() {
-        return BotStepBuilder
+        return BotStepsChain.builder()
                 .name("greeting")
-                .clearLast()
+                .removeLastMessage()
                 .message(s -> {
                     final String name = s.context().getData().get("name");
                     final int day = Integer.parseInt(s.context().getData().get("day"));

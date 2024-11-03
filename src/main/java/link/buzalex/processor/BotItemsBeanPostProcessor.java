@@ -4,7 +4,7 @@ import link.buzalex.annotation.EntryPoint;
 import link.buzalex.annotation.StepsChain;
 import link.buzalex.impl.BotItemsInitializer;
 import link.buzalex.models.menu.BotEntryPoint;
-import link.buzalex.models.menu.BotStepsChain;
+import link.buzalex.models.step.BotStepsChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;

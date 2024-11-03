@@ -2,10 +2,12 @@ package link.buzalex.impl;
 
 import link.buzalex.api.BotItemsHolder;
 import link.buzalex.exception.BotItemInitializationException;
+import link.buzalex.models.action.BaseStepAction;
+import link.buzalex.models.action.ConditionalAction;
 import link.buzalex.models.menu.BotEntryPoint;
-import link.buzalex.models.menu.BotStep;
-import link.buzalex.models.menu.BotStepsChain;
-import link.buzalex.models.menu.ConditionalActions;
+import link.buzalex.models.step.BaseActionsBuilder;
+import link.buzalex.models.step.BotStep;
+import link.buzalex.models.step.BotStepsChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -13,6 +15,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -41,7 +44,9 @@ public class BotItemsInitializer {
         if (entryPoint.stepsChain() != null){
             initStepsChain(entryPoint.stepsChain());
         }
-        checkReference(entryPoint.rootStepName());
+        if (entryPoint.rootStepName() != null){
+            checkReference(entryPoint.rootStepName());
+        }
         BotEntryPoint botEntryPoint = entryPoint.convertToPlainEntryPoint();
         itemsHolder.putEntryPoint(botEntryPoint);
     }
@@ -54,14 +59,19 @@ public class BotItemsInitializer {
     private void collect(BotStepsChain step) {
         putStep(step.convertToPlainStep());
         LOG.debug("Step [{}] initialized", step.name());
-        if (step.answerActions() != null) {
-            for (ConditionalActions conditionalAction : step.answerActions().conditionalActions()) {
-                if (conditionalAction.nextStep() == null) continue;
-                collect(conditionalAction.nextStep());
-            }
-        }
+        checkActions(step.stepActions());
+        checkActions(step.answerActions());
         if (step.nextStep() == null) return;
         collect(step.nextStep());
+    }
+
+    private void checkActions(List<BaseStepAction> baseStepActions) {
+        for (BaseStepAction action : baseStepActions) {
+            if (action instanceof ConditionalAction condition){
+                if (condition.getNextStep() == null) continue;
+                collect(condition.getNextStep());
+            }
+        }
     }
 
     private void putStep(BotStep step){

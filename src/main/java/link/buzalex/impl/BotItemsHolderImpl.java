@@ -1,9 +1,8 @@
 package link.buzalex.impl;
 
 import link.buzalex.api.BotItemsHolder;
-import link.buzalex.exception.BotItemInitializationException;
 import link.buzalex.models.menu.BotEntryPoint;
-import link.buzalex.models.menu.BotStep;
+import link.buzalex.models.step.BotStep;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

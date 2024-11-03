@@ -1,11 +1,15 @@
 package link.buzalex.impl;
 
-import link.buzalex.api.*;
+import link.buzalex.api.BotItemsHolder;
+import link.buzalex.api.BotMenuActionsExecutor;
+import link.buzalex.api.BotMenuStepProcessor;
+import link.buzalex.api.UserContext;
 import link.buzalex.models.BotMessage;
 import link.buzalex.models.UserMessageContainer;
-import link.buzalex.models.menu.BotStep;
-import link.buzalex.models.menu.ConditionalActions;
+import link.buzalex.models.action.BaseStepAction;
+import link.buzalex.models.action.ConditionalAction;
 import link.buzalex.models.menu.BotEntryPoint;
+import link.buzalex.models.step.BotStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,7 +31,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
     @Override
     public void processStep(BotMessage message, UserContext user) {
-        LOG.debug("Message processing is being started. Menu section: " + user.getMenuSection() + ", steps: " + user.getMenuSteps());
+        LOG.debug("Message processing is being started. Menu section: {}, steps: {}", user.getMenuSection(), user.getMenuSteps());
         String menuSection = determineMenuSection(message, user);
         if (menuSection == null) {
             LOG.warn("Menu section cannot be determined");
@@ -115,22 +119,21 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
         String nextStepName = null;
 
-        if (actions.answerActions() != null) {
-            for (ConditionalActions conditionalAction : actions.answerActions().conditionalActions()) {
-                if (conditionalAction.condition().test(new UserMessageContainer(botMessage, userContext))) {
+        for (BaseStepAction action : actions.answerActions()) {
+            if (action instanceof ConditionalAction conditionalAction){
+                if (conditionalAction.getCondition().test(new UserMessageContainer(botMessage, userContext))) {
                     LOG.debug("Condition is being processed on step: {}", actions.name());
-                    actionsExecutor.execute(botMessage, userContext, conditionalAction);
-                    if (conditionalAction.nextStep() == null) {
+                    actionsExecutor.execute(botMessage, userContext, conditionalAction.getConditionalActions());
+                    if (conditionalAction.getNextStep() == null) {
                         LOG.debug("Condition finished");
+                    } else {
+                        nextStepName = conditionalAction.getNextStep().name();
                     }
-                    nextStepName = conditionalAction.nextStep().name();
                     break;
                 }
             }
-            if (actions.answerActions().saveAs() != null) {
-                userContext.getData().put(actions.answerActions().saveAs(), botMessage.text());
-            }
         }
+
 
         return nextStepName == null ? actions.nextStepName() : nextStepName;
     }

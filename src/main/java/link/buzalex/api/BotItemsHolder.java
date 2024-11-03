@@ -1,7 +1,7 @@
 package link.buzalex.api;
 
 import link.buzalex.models.menu.BotEntryPoint;
-import link.buzalex.models.menu.BotStep;
+import link.buzalex.models.step.BotStep;
 
 import java.util.Map;
 
