@@ -1,6 +1,6 @@
 package link.buzalex.api;
 
-import link.buzalex.models.BotMessageReply;
+import link.buzalex.models.message.BotMessageReply;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 
 import java.util.function.Consumer;

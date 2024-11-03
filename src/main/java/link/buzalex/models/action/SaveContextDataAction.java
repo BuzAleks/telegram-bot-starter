@@ -1,4 +1,4 @@
 package link.buzalex.models.action;
 
-public class SaveContextDataAction extends BaseStepAction{
+public record SaveContextDataAction(String name, Object value) implements BaseStepAction {
 }

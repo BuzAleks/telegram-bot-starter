@@ -1,4 +1,4 @@
-package link.buzalex.processor;
+package link.buzalex.configuration;
 
 import link.buzalex.annotation.EntryPoint;
 import link.buzalex.annotation.StepsChain;

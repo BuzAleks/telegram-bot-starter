@@ -6,7 +6,7 @@ import link.buzalex.api.ExceptionHandler;
 import link.buzalex.configuration.TelegramBotProperties;
 import link.buzalex.exception.BotApiServiceException;
 import link.buzalex.impl.BotMenuUserManagerImpl;
-import link.buzalex.models.BotMessage;
+import link.buzalex.models.message.BotMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

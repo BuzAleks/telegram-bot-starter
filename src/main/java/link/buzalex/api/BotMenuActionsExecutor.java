@@ -1,6 +1,6 @@
 package link.buzalex.api;
 
-import link.buzalex.models.BotMessage;
+import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.action.BaseStepAction;
 
 import java.util.List;

@@ -2,8 +2,8 @@ package link.buzalex.impl;
 
 import link.buzalex.api.UserContext;
 import link.buzalex.api.UserContextInitializer;
-import link.buzalex.models.BotMessage;
-import link.buzalex.models.UserContextImpl;
+import link.buzalex.models.message.BotMessage;
+import link.buzalex.models.context.UserContextImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

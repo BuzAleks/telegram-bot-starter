@@ -5,7 +5,6 @@ import link.buzalex.exception.BotItemInitializationException;
 import link.buzalex.models.action.BaseStepAction;
 import link.buzalex.models.action.ConditionalAction;
 import link.buzalex.models.menu.BotEntryPoint;
-import link.buzalex.models.step.BaseActionsBuilder;
 import link.buzalex.models.step.BotStep;
 import link.buzalex.models.step.BotStepsChain;
 import org.slf4j.Logger;
@@ -68,8 +67,8 @@ public class BotItemsInitializer {
     private void checkActions(List<BaseStepAction> baseStepActions) {
         for (BaseStepAction action : baseStepActions) {
             if (action instanceof ConditionalAction condition){
-                if (condition.getNextStep() == null) continue;
-                collect(condition.getNextStep());
+                if (condition.nextStep() == null) continue;
+                collect(condition.nextStep());
             }
         }
     }

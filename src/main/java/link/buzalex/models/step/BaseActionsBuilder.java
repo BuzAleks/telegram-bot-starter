@@ -1,11 +1,8 @@
 package link.buzalex.models.step;
 
-import link.buzalex.models.BotMessageReply;
-import link.buzalex.models.UserMessageContainer;
-import link.buzalex.models.action.BaseStepAction;
-import link.buzalex.models.action.ExecuteAction;
-import link.buzalex.models.action.RemoveMessageAction;
-import link.buzalex.models.action.SendMessageAction;
+import link.buzalex.models.action.*;
+import link.buzalex.models.message.BotMessageReply;
+import link.buzalex.models.context.UserMessageContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +44,12 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
     @SuppressWarnings("unchecked")
     public T execute(Consumer<UserMessageContainer> executor) {
         actions.add(new ExecuteAction(executor));
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T useStep(String stepName) {
+        actions.add(new ReuseStepsChainAction(stepName));
         return (T) this;
     }
 

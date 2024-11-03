@@ -4,7 +4,7 @@ import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.BotMenuUserManager;
 import link.buzalex.api.UserContextInitializer;
 import link.buzalex.api.UserContextStorage;
-import link.buzalex.models.BotMessage;
+import link.buzalex.models.message.BotMessage;
 import link.buzalex.api.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package link.buzalex.models;
+package link.buzalex.models.message;
 
 import link.buzalex.utils.BotUtils;
 import org.apache.commons.lang3.tuple.Pair;

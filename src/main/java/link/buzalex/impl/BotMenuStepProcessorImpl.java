@@ -4,8 +4,8 @@ import link.buzalex.api.BotItemsHolder;
 import link.buzalex.api.BotMenuActionsExecutor;
 import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.UserContext;
-import link.buzalex.models.BotMessage;
-import link.buzalex.models.UserMessageContainer;
+import link.buzalex.models.message.BotMessage;
+import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.action.BaseStepAction;
 import link.buzalex.models.action.ConditionalAction;
 import link.buzalex.models.menu.BotEntryPoint;
@@ -121,13 +121,13 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
         for (BaseStepAction action : actions.answerActions()) {
             if (action instanceof ConditionalAction conditionalAction){
-                if (conditionalAction.getCondition().test(new UserMessageContainer(botMessage, userContext))) {
+                if (conditionalAction.condition().test(new UserMessageContainer(botMessage, userContext))) {
                     LOG.debug("Condition is being processed on step: {}", actions.name());
-                    actionsExecutor.execute(botMessage, userContext, conditionalAction.getConditionalActions());
-                    if (conditionalAction.getNextStep() == null) {
+                    actionsExecutor.execute(botMessage, userContext, conditionalAction.conditionalActions());
+                    if (conditionalAction.nextStep() == null) {
                         LOG.debug("Condition finished");
                     } else {
-                        nextStepName = conditionalAction.getNextStep().name();
+                        nextStepName = conditionalAction.nextStep().name();
                     }
                     break;
                 }

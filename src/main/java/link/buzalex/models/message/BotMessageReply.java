@@ -1,4 +1,4 @@
-package link.buzalex.models;
+package link.buzalex.models.message;
 
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 

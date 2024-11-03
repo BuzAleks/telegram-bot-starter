@@ -1,8 +1,8 @@
 package link.buzalex.impl;
 
 import link.buzalex.api.BotMessageConverter;
-import link.buzalex.models.BotMessage;
-import link.buzalex.models.BotMessageBuilder;
+import link.buzalex.models.message.BotMessage;
+import link.buzalex.models.message.BotMessageBuilder;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;

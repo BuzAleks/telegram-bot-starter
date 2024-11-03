@@ -1,4 +1,4 @@
-package link.buzalex.models;
+package link.buzalex.models.message;
 
 import java.time.Instant;
 

@@ -1,4 +1,4 @@
 package link.buzalex.models.action;
 
-public class BaseStepAction {
+public interface BaseStepAction {
 }

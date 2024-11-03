@@ -1,6 +1,6 @@
 package link.buzalex.models.step;
 
-import link.buzalex.models.UserMessageContainer;
+import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.action.ConditionalAction;
 
 import java.util.function.Predicate;

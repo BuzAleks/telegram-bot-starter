@@ -1,6 +1,6 @@
 package link.buzalex.impl;
 
-import link.buzalex.models.BotMessageReply;
+import link.buzalex.models.message.BotMessageReply;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.menu.BotEntryPointBuilder;
 import link.buzalex.models.step.BotStepsChain;

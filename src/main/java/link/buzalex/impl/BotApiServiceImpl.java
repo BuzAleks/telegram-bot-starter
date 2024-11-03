@@ -1,7 +1,7 @@
 package link.buzalex.impl;
 
 import link.buzalex.api.BotApiService;
-import link.buzalex.models.BotMessageReply;
+import link.buzalex.models.message.BotMessageReply;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;

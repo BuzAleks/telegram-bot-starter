@@ -1,4 +1,4 @@
-package link.buzalex.models;
+package link.buzalex.models.context;
 
 import link.buzalex.api.UserContext;
 
