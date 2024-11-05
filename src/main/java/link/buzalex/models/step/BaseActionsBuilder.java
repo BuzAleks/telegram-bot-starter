@@ -1,8 +1,8 @@
 package link.buzalex.models.step;
 
 import link.buzalex.models.action.*;
-import link.buzalex.models.message.BotMessageReply;
 import link.buzalex.models.context.UserMessageContainer;
+import link.buzalex.models.message.BotMessageReply;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +12,10 @@ import java.util.function.Predicate;
 
 public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
     List<BaseStepAction> actions = new ArrayList<>();
+    final BotStepBuilder stepBuilder;
 
-    BaseActionsBuilder() {
+    BaseActionsBuilder(BotStepBuilder stepBuilder) {
+        this.stepBuilder = stepBuilder;
     }
 
     @SuppressWarnings("unchecked")
@@ -56,5 +58,20 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
     @SuppressWarnings("unchecked")
     public ConditionalActionsBuilder<T> ifTrue(Predicate<UserMessageContainer> condition) {
         return new ConditionalActionsBuilder<>((T) this, condition);
+    }
+    @SuppressWarnings("unchecked")
+    public T putContextData(String key, Object data) {
+        actions.add(new ExecuteAction(s -> s.context().put(key, data)));
+        return (T) this;
+    }
+    @SuppressWarnings("unchecked")
+    public T modifyContextData(String key, Function<Object, Object> func) {
+        actions.add(new ExecuteAction(s -> s.context().modifyIfPresents(key, func)));
+        return (T) this;
+    }
+    @SuppressWarnings("unchecked")
+    public T modifyContextDataAsString(String key, Function<String, String> func) {
+        actions.add(new ExecuteAction(s -> s.context().modifyIfPresentsAsString(key, func)));
+        return (T) this;
     }
 }

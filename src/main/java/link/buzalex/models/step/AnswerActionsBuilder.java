@@ -1,11 +1,9 @@
 package link.buzalex.models.step;
 
 public class AnswerActionsBuilder extends BaseActionsBuilder<AnswerActionsBuilder> {
-    private final BotStepBuilder stepBuilder;
 
     public AnswerActionsBuilder(BotStepBuilder stepBuilder) {
-        super();
-        this.stepBuilder = stepBuilder;
+        super(stepBuilder);
     }
 
     public BotStepsChain finish() {

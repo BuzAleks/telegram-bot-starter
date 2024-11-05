@@ -7,6 +7,7 @@ import link.buzalex.models.action.BaseStepAction;
 import link.buzalex.models.action.ExecuteAction;
 import link.buzalex.models.action.RemoveMessageAction;
 import link.buzalex.models.action.SendMessageAction;
+import link.buzalex.models.context.UserContextWrapper;
 import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.message.BotMessageReply;
@@ -24,7 +25,8 @@ public class BotMenuActionsExecutorImpl implements BotMenuActionsExecutor {
 
     @Override
     public void execute(BotMessage botMessage, UserContext userContext, List<BaseStepAction> actions) {
-        final UserMessageContainer userMessageContainer = new UserMessageContainer(botMessage, userContext);
+        UserContextWrapper userContextWrapper = new UserContextWrapper(userContext);
+        final UserMessageContainer userMessageContainer = new UserMessageContainer(botMessage, userContextWrapper);
         for (BaseStepAction action : actions) {
             if (action instanceof ExecuteAction executeAction)
                 executeAction(userMessageContainer, executeAction);

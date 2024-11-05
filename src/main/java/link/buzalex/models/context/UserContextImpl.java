@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class UserContextImpl implements UserContext {
     private Long id;
-    private Map<String, String> data = new HashMap<>();
+    private Map<String, Object> data = new HashMap<>();
     private String menuSection;
     private List<String> menuSteps = new ArrayList<>();
 
@@ -29,7 +29,7 @@ public class UserContextImpl implements UserContext {
         this.id = id;
     }
 
-    public Map<String, String> getData() {
+    public Map<String, Object> getData() {
         return data;
     }
 
@@ -53,7 +53,7 @@ public class UserContextImpl implements UserContext {
         this.menuSteps = menuSteps;
     }
 
-    public void setData(Map<String, String> data) {
+    public void setData(Map<String, Object> data) {
         this.data = data;
     }
 }

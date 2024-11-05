@@ -8,7 +8,7 @@ public interface UserContext {
 
     void setId(Long id);
 
-    Map<String, String> getData();
+    Map<String, Object> getData();
 
     String getMenuSection();
 

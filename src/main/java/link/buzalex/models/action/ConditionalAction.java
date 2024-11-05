@@ -9,5 +9,6 @@ import java.util.function.Predicate;
 public record ConditionalAction(List<BaseStepAction> conditionalActions,
                                 Predicate<UserMessageContainer> condition,
                                 BotStepsChain nextStep,
+                                String nextStepName,
                                 boolean finish) implements BaseStepAction {
 }

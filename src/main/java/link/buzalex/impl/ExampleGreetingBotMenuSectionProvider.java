@@ -1,8 +1,8 @@
 package link.buzalex.impl;
 
-import link.buzalex.models.message.BotMessageReply;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.menu.BotEntryPointBuilder;
+import link.buzalex.models.message.BotMessageReply;
 import link.buzalex.models.step.BotStepsChain;
 import one.util.streamex.StreamEx;
 
@@ -36,7 +36,7 @@ public class ExampleGreetingBotMenuSectionProvider {
     public BotStepsChain rootStep() {
         return BotStepsChain.builder()
                 .name("rootStep")
-                .execute(s -> s.context().getData().put("initYear", "1995"))
+                .putContextData("initYear", "1995")
                 .message("What's your name?")
                 .waitAnswer()
                 .saveAs("name")
@@ -46,9 +46,8 @@ public class ExampleGreetingBotMenuSectionProvider {
     public BotStepsChain nextStep2() {
         return BotStepsChain.builder()
                 .name("nextStep2")
-
                 .message(s -> {
-                    int initYear = Integer.parseInt(s.context().getData().get("initYear"));
+                    int initYear = Integer.parseInt(s.context().getAsString("initYear").get());
                     return BotMessageReply.builder()
                             .text("Year of birth?")
                             .simpleKeyboard(List.of(
@@ -67,8 +66,8 @@ public class ExampleGreetingBotMenuSectionProvider {
         return BotStepsChain.builder()
                 .name("minus")
                 .execute(s -> {
-                    int initYear = Integer.parseInt(s.context().getData().get("initYear")) - 3;
-                    s.context().getData().put("initYear", Integer.toString(initYear));
+                    int initYear = Integer.parseInt(s.context().getAsString("initYear").get()) - 3;
+                    s.context().put("initYear", Integer.toString(initYear));
                 })
                 .removeLastMessage()
                 .nextStep(null);
@@ -78,8 +77,8 @@ public class ExampleGreetingBotMenuSectionProvider {
         return BotStepsChain.builder()
                 .name("plus")
                 .execute(s -> {
-                    int initYear = Integer.parseInt(s.context().getData().get("initYear")) + 3;
-                    s.context().getData().put("initYear", Integer.toString(initYear));
+                    int initYear = Integer.parseInt(s.context().getAsString("initYear").get()) + 3;
+                    s.context().put("initYear", Integer.toString(initYear));
                 })
                 .removeLastMessage()
                 .nextStep(null);
@@ -106,8 +105,8 @@ public class ExampleGreetingBotMenuSectionProvider {
                 .name("day")
                 .removeLastMessage()
                 .message(s -> {
-                    final Integer year = Integer.parseInt(s.context().getData().get("year"));
-                    final String month = s.context().getData().get("month");
+                    final Integer year = Integer.parseInt(s.context().getAsString("year").get());
+                    final String month = s.context().getAsString("month").get();
                     final LocalDate localDate = LocalDate.of(year, Month.valueOf(month), 1);
                     final List<Object> collect = localDate
                             .minusDays(localDate.getDayOfWeek().getValue() - 1)
@@ -129,7 +128,7 @@ public class ExampleGreetingBotMenuSectionProvider {
                 })
                 .waitAnswer()
                 .removeLastMessage()
-                .ifTrue(s -> s.message().text().equals("-")).nextStep(null)
+                .ifTrue(s -> s.message().text().equals("-")).nextStep("")
                 .saveAs("day")
                 .nextStep(greeting());
     }
@@ -139,10 +138,10 @@ public class ExampleGreetingBotMenuSectionProvider {
                 .name("greeting")
                 .removeLastMessage()
                 .message(s -> {
-                    final String name = s.context().getData().get("name");
-                    final int day = Integer.parseInt(s.context().getData().get("day"));
-                    final int year = Integer.parseInt(s.context().getData().get("year"));
-                    final Month month = Month.valueOf(s.context().getData().get("month"));
+                    final String name = s.context().getAsString("name").get();
+                    final int day = Integer.parseInt(s.context().getAsString("day").get());
+                    final int year = Integer.parseInt(s.context().getAsString("year").get());
+                    final Month month = Month.valueOf(s.context().getAsString("month").get());
                     final long count = LocalDate.of(year, month, day).datesUntil(LocalDate.now()).count();
                     final String hi_ = new StringBuilder("Hi ")
                             .append(name)

@@ -18,7 +18,7 @@ public class UserContextInitializerImpl implements UserContextInitializer<UserCo
     public UserContext initUser(BotMessage botMessage) {
         final UserContext userContext = new UserContextImpl();
         userContext.setId(botMessage.userId());
-        LOG.debug("New user initialized: " + botMessage.userId());
+        LOG.debug("New user initialized: {}", botMessage.userId());
         return userContext;
     }
 }
