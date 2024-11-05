@@ -1,19 +1,23 @@
 package link.buzalex.impl;
 
+import link.buzalex.annotation.EntryPoint;
+import link.buzalex.annotation.StepsChain;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.menu.BotEntryPointBuilder;
 import link.buzalex.models.message.BotMessageReply;
 import link.buzalex.models.step.BotStepsChain;
 import one.util.streamex.StreamEx;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
+@Component
 public class ExampleGreetingBotMenuSectionProvider {
 
+    @EntryPoint
     public BotEntryPoint provideMenuSection() {
         // TODO: 16.01.2024 Add keyboard row and col methods to add keyboard
         // TODO: 16.01.2024 add methods for operating with last message (remove, edit)
@@ -29,6 +33,7 @@ public class ExampleGreetingBotMenuSectionProvider {
                 .build();
     }
 
+    @StepsChain
     public BotStepsChain getBotStepsChain() {
         return rootStep();
     }
@@ -36,52 +41,32 @@ public class ExampleGreetingBotMenuSectionProvider {
     public BotStepsChain rootStep() {
         return BotStepsChain.builder()
                 .name("rootStep")
-                .putContextData("initYear", "1995")
+                .putContextData("initYear", 1995)
                 .message("What's your name?")
                 .waitAnswer()
-                .saveAs("name")
+                .putMessageTextToContext("name")
                 .nextStep(nextStep2());
     }
 
     public BotStepsChain nextStep2() {
         return BotStepsChain.builder()
                 .name("nextStep2")
-                .message(s -> {
-                    int initYear = Integer.parseInt(s.context().getAsString("initYear").get());
-                    return BotMessageReply.builder()
-                            .text("Year of birth?")
-                            .simpleKeyboard(List.of(
-                                    List.of("<", initYear + 1, initYear + 2, initYear + 3, ">")
-                            ))
-                            .build();
-                })
+                .removeLastMessage()
+                .message(s -> s.context().getAsInt("initYear")
+                        .map(initYear -> BotMessageReply.builder()
+                                .text("Year of birth?")
+                                .simpleKeyboard(List.of(
+                                        List.of("<", initYear + 1, initYear + 2, initYear + 3, ">")
+                                )).build())
+                        .orElse(BotMessageReply.builder()
+                                .text("Something went wrong").build()))
                 .waitAnswer()
-                .ifTrue(s -> s.message().text().equals("<")).nextStep(minus())
-                .ifTrue(s -> s.message().text().equals(">")).nextStep(plus())
-                .saveAs("year")
+                .ifTrue(s -> s.message().text().equals("<"))
+                    .modifyContextDataAsInt("initYear", year -> year - 3).repeatCurrentStep()
+                .ifTrue(s -> s.message().text().equals(">"))
+                    .modifyContextDataAsInt("initYear", year -> year + 3).repeatCurrentStep()
+                .putMessageTextToContext("year")
                 .nextStep(month());
-    }
-
-    public BotStepsChain minus() {
-        return BotStepsChain.builder()
-                .name("minus")
-                .execute(s -> {
-                    int initYear = Integer.parseInt(s.context().getAsString("initYear").get()) - 3;
-                    s.context().put("initYear", Integer.toString(initYear));
-                })
-                .removeLastMessage()
-                .nextStep(null);
-    }
-
-    public BotStepsChain plus() {
-        return BotStepsChain.builder()
-                .name("plus")
-                .execute(s -> {
-                    int initYear = Integer.parseInt(s.context().getAsString("initYear").get()) + 3;
-                    s.context().put("initYear", Integer.toString(initYear));
-                })
-                .removeLastMessage()
-                .nextStep(null);
     }
 
     public BotStepsChain month() {
@@ -92,11 +77,11 @@ public class ExampleGreetingBotMenuSectionProvider {
                     final List<Object> months = Arrays.stream(Month.values()).map(Enum::name).map(t -> (Object) t).collect(Collectors.toList());
                     return BotMessageReply.builder()
                             .text("Month of birth?")
-                            .simpleKeyboard(StreamEx.ofSubLists(months, 2).toList())
+                            .simpleKeyboard(StreamEx.ofSubLists(months, 3).toList())
                             .build();
                 })
                 .waitAnswer()
-                .saveAs("month")
+                .putMessageTextToContext("month")
                 .nextStep(day());
     }
 
@@ -129,7 +114,7 @@ public class ExampleGreetingBotMenuSectionProvider {
                 .waitAnswer()
                 .removeLastMessage()
                 .ifTrue(s -> s.message().text().equals("-")).nextStep("")
-                .saveAs("day")
+                .putMessageTextToContext("day")
                 .nextStep(greeting());
     }
 

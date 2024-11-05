@@ -3,20 +3,20 @@ package link.buzalex.impl;
 import link.buzalex.api.BotApiService;
 import link.buzalex.api.BotMenuActionsExecutor;
 import link.buzalex.api.UserContext;
-import link.buzalex.models.action.BaseStepAction;
-import link.buzalex.models.action.ExecuteAction;
-import link.buzalex.models.action.RemoveMessageAction;
-import link.buzalex.models.action.SendMessageAction;
+import link.buzalex.models.action.*;
 import link.buzalex.models.context.UserContextWrapper;
 import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.message.BotMessageReply;
+import link.buzalex.models.step.BotStepsChain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class BotMenuActionsExecutorImpl implements BotMenuActionsExecutor {
+    private static final Logger LOG = LoggerFactory.getLogger(BotMenuActionsExecutorImpl.class);
+
     private final BotApiService apiService;
 
     public BotMenuActionsExecutorImpl(BotApiService apiService) {
@@ -24,17 +24,15 @@ public class BotMenuActionsExecutorImpl implements BotMenuActionsExecutor {
     }
 
     @Override
-    public void execute(BotMessage botMessage, UserContext userContext, List<BaseStepAction> actions) {
+    public void execute(BotMessage botMessage, UserContext userContext, BaseStepAction action) {
         UserContextWrapper userContextWrapper = new UserContextWrapper(userContext);
         final UserMessageContainer userMessageContainer = new UserMessageContainer(botMessage, userContextWrapper);
-        for (BaseStepAction action : actions) {
-            if (action instanceof ExecuteAction executeAction)
-                executeAction(userMessageContainer, executeAction);
-            else if (action instanceof SendMessageAction executeAction)
-                executeAction(userMessageContainer, executeAction);
-            else if (action instanceof RemoveMessageAction executeAction)
-                executeAction(userMessageContainer, executeAction);
-        }
+        if (action instanceof ExecuteAction executeAction)
+            executeAction(userMessageContainer, executeAction);
+        else if (action instanceof SendMessageAction executeAction)
+            executeAction(userMessageContainer, executeAction);
+        else if (action instanceof RemoveMessageAction executeAction)
+            executeAction(userMessageContainer, executeAction);
     }
 
     private void executeAction(UserMessageContainer userMessageContainer, ExecuteAction action) {

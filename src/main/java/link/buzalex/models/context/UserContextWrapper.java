@@ -58,16 +58,27 @@ public class UserContextWrapper {
     }
 
     public void modifyIfPresents(String key, Function<Object, Object> func){
-        Object orDefault = context.getData().get(key);
-        if (orDefault != null){
-            context.getData().put(key, func.apply(orDefault));
+        Object obj = context.getData().get(key);
+        if (obj != null){
+            context.getData().put(key, func.apply(obj));
         }
     }
 
-    public void modifyIfPresentsAsString(String key, Function<String, String> func){
-        Object orDefault = context.getData().get(key);
-        if (orDefault != null){
-            context.getData().put(key, func.apply(orDefault.toString()));
+    public void modifyIfPresentsAsString(String key, Function<String, Object> func){
+        Object obj = context.getData().get(key);
+        if (obj != null){
+            context.getData().put(key, func.apply(obj.toString()));
+        }
+    }
+
+    public void modifyIfPresentsAsInt(String key, Function<Integer, Object> func){
+        Object obj = context.getData().get(key);
+        try {
+            if (obj != null){
+                int i = Integer.parseInt(obj.toString());
+                context.getData().put(key, func.apply(i));
+            }
+        } catch (NumberFormatException ignored) {
         }
     }
 }

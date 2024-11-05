@@ -59,19 +59,28 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
     public ConditionalActionsBuilder<T> ifTrue(Predicate<UserMessageContainer> condition) {
         return new ConditionalActionsBuilder<>((T) this, condition);
     }
+
     @SuppressWarnings("unchecked")
     public T putContextData(String key, Object data) {
         actions.add(new ExecuteAction(s -> s.context().put(key, data)));
         return (T) this;
     }
+
     @SuppressWarnings("unchecked")
     public T modifyContextData(String key, Function<Object, Object> func) {
         actions.add(new ExecuteAction(s -> s.context().modifyIfPresents(key, func)));
         return (T) this;
     }
+
     @SuppressWarnings("unchecked")
-    public T modifyContextDataAsString(String key, Function<String, String> func) {
+    public T modifyContextDataAsString(String key, Function<String, Object> func) {
         actions.add(new ExecuteAction(s -> s.context().modifyIfPresentsAsString(key, func)));
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T modifyContextDataAsInt(String key, Function<Integer, Object> func) {
+        actions.add(new ExecuteAction(s -> s.context().modifyIfPresentsAsInt(key, func)));
         return (T) this;
     }
 }

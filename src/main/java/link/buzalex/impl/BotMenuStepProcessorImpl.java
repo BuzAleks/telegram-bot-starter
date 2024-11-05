@@ -4,12 +4,12 @@ import link.buzalex.api.BotItemsHolder;
 import link.buzalex.api.BotMenuActionsExecutor;
 import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.UserContext;
-import link.buzalex.models.context.UserContextWrapper;
-import link.buzalex.models.message.BotMessage;
-import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.action.BaseStepAction;
 import link.buzalex.models.action.ConditionalAction;
+import link.buzalex.models.context.UserContextWrapper;
+import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.menu.BotEntryPoint;
+import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.step.BotStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,9 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
                     processCurrentStep(step, message, user);
                 }
             }
-
+            if (step.nextStepName()==null){
+                finishMenu(user);
+            }
         }
     }
 
@@ -112,7 +114,9 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
     private void processCurrentStep(BotStep actions, BotMessage botMessage, UserContext user) {
         LOG.debug("Current step is being processed: {}", actions.name());
-        actionsExecutor.execute(botMessage, user, actions.stepActions());
+        for (BaseStepAction stepAction : actions.stepActions()) {
+            actionsExecutor.execute(botMessage, user, stepAction);
+        }
     }
 
     private String processPrevStepAndReturnNext(BotStep actions, BotMessage botMessage, UserContext userContext) {
@@ -121,17 +125,23 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
         String nextStepName = null;
 
         for (BaseStepAction action : actions.answerActions()) {
-            if (action instanceof ConditionalAction conditionalAction){
+
+            if (action instanceof ConditionalAction conditionalAction) {
                 if (conditionalAction.condition().test(new UserMessageContainer(botMessage, new UserContextWrapper(userContext)))) {
                     LOG.debug("Condition is being processed on step: {}", actions.name());
-                    actionsExecutor.execute(botMessage, userContext, conditionalAction.conditionalActions());
-                    if (conditionalAction.nextStep() == null) {
-                        LOG.debug("Condition finished");
-                    } else {
-                        nextStepName = conditionalAction.nextStep().name();
+                    for (BaseStepAction conditionaledAction : conditionalAction.conditionalActions()) {
+                        actionsExecutor.execute(botMessage, userContext, conditionaledAction);
                     }
-                    break;
+
+                    nextStepName = conditionalAction.nextStepName();
+
+                    if (conditionalAction.finish()) {
+                        LOG.debug("Condition finished");
+                        break;
+                    }
                 }
+            } else {
+                actionsExecutor.execute(botMessage, userContext, action);
             }
         }
 

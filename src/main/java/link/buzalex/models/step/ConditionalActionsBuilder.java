@@ -22,7 +22,7 @@ public class ConditionalActionsBuilder<T extends BaseActionsBuilder<T>> extends 
     }
 
     public T nextStep(BotStepsChain nextStep) {
-        parentBuilder.actions.add(new ConditionalAction(this.actions, condition, nextStep, null, false));
+        parentBuilder.actions.add(new ConditionalAction(this.actions, condition, nextStep, nextStep == null ? null : nextStep.name(), false));
         return parentBuilder;
     }
 
@@ -37,7 +37,7 @@ public class ConditionalActionsBuilder<T extends BaseActionsBuilder<T>> extends 
     }
 
     public T repeatCurrentStep() {
-        parentBuilder.actions.add(new ConditionalAction(this.actions, condition, null, stepBuilder.name, false));
+        parentBuilder.actions.add(new ConditionalAction(this.actions, condition, null, stepBuilder.name, true));
         return parentBuilder;
     }
 }
