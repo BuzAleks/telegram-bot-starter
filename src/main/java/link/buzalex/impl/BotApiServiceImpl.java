@@ -2,6 +2,7 @@ package link.buzalex.impl;
 
 import link.buzalex.api.BotApiService;
 import link.buzalex.models.message.BotMessageReply;
+import link.buzalex.utils.BotUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -33,7 +34,7 @@ public class BotApiServiceImpl implements BotApiService {
 
         executor.accept(SendMessage.builder()
                 .text(message.text())
-                .replyMarkup(message.keyboard())
+                .replyMarkup(BotUtils.convertToInlineKeyboard(message.keyboard()))
                 .chatId(id)
                 .build());
     }

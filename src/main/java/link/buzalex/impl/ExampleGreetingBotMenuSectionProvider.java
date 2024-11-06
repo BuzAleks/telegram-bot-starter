@@ -41,7 +41,7 @@ public class ExampleGreetingBotMenuSectionProvider {
     public BotStepsChain rootStep() {
         return BotStepsChain.builder()
                 .name("rootStep")
-                .putContextData("initYear", 1995)
+                .putContextData("initYear", null)
                 .message("What's your name?")
                 .waitAnswer()
                 .putMessageTextToContext("name")
@@ -52,14 +52,9 @@ public class ExampleGreetingBotMenuSectionProvider {
         return BotStepsChain.builder()
                 .name("nextStep2")
                 .removeLastMessage()
-                .message(s -> s.context().getAsInt("initYear")
-                        .map(initYear -> BotMessageReply.builder()
-                                .text("Year of birth?")
-                                .simpleKeyboard(List.of(
-                                        List.of("<", initYear + 1, initYear + 2, initYear + 3, ">")
-                                )).build())
-                        .orElse(BotMessageReply.builder()
-                                .text("Something went wrong").build()))
+                .fKeyboard("Year of birth?", """
+                        < | #{#initYear} |  #{#initYear+1} | #{#initYear+2} | >
+                        """)
                 .waitAnswer()
                 .ifTrue(s -> s.message().text().equals("<"))
                     .modifyContextDataAsInt("initYear", year -> year - 3).repeatCurrentStep()

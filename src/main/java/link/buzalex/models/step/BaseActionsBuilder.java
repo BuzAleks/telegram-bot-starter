@@ -3,6 +3,7 @@ package link.buzalex.models.step;
 import link.buzalex.models.action.*;
 import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessageReply;
+import link.buzalex.utils.BotUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,13 +36,18 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
     }
 
     public T message(BotMessageReply message) {
-        return this.message(0L, mes -> message);
+        return this.message(0L, userMessageContainer -> message);
 
     }
 
     public T message(String message) {
         return this.message(new BotMessageReply(message, null));
     }
+
+    public T fKeyboard(String message, String keyboard) {
+        return this.message(new BotMessageReply(message, BotUtils.convertStringToKeyboardList(keyboard)));
+    }
+
 
     @SuppressWarnings("unchecked")
     public T execute(Consumer<UserMessageContainer> executor) {

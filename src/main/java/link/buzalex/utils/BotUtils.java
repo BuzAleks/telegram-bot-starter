@@ -25,6 +25,7 @@ public class BotUtils {
     }
 
     public static InlineKeyboardMarkup convertToInlineKeyboard(List<List<Pair<String, String>>> data) {
+        if (data==null) return null;
         InlineKeyboardMarkup replyKeyboardMarkup = new InlineKeyboardMarkup();
 
         List<List<InlineKeyboardButton>> keyboard = data.stream()
@@ -40,11 +41,15 @@ public class BotUtils {
         return replyKeyboardMarkup;
     }
 
-    public static List<List<Pair<String, String>>> convertStringToKeyboard(String input) {
+    public static InlineKeyboardMarkup convertStringToKeyboard(String input) {
+        return convertToInlineKeyboard(convertStringToKeyboardList(input));
+    }
+
+    public static List<List<Pair<String, String>>> convertStringToKeyboardList(String input) {
         List<List<Pair<String, String>>> result = new ArrayList<>();
 
         // Pattern to match strings with `{}` format
-        Pattern pattern = Pattern.compile("(.+?)\\{(.+?)\\}");
+        Pattern pattern = Pattern.compile("(.+?)\\[(.+?)\\]");
 
         // Split input by new lines
         String[] lines = input.split("\\n");

@@ -1,14 +1,12 @@
 package link.buzalex.models.message;
 
-import link.buzalex.utils.BotUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.util.List;
 
 public final class BotMessageReplyBuilder {
     private String text;
-    private InlineKeyboardMarkup keyboard;
+    private List<List<Pair<String, String>>> keyboard;
 
     BotMessageReplyBuilder() {
     }
@@ -19,12 +17,12 @@ public final class BotMessageReplyBuilder {
     }
 
     public BotMessageReplyBuilder simpleKeyboard(List<List<Object>> keyboard) {
-        this.keyboard = BotUtils.convertToSimpleInlineKeyboard(keyboard);
+        this.keyboard = keyboard==null? null: keyboard.stream().map(s -> s.stream().map(t -> Pair.of(t.toString(), t.toString())).toList()).toList();
         return this;
     }
 
     public BotMessageReplyBuilder keyboard(List<List<Pair<String, String>>> keyboard) {
-        this.keyboard = BotUtils.convertToInlineKeyboard(keyboard);
+        this.keyboard = keyboard;
         return this;
     }
 
