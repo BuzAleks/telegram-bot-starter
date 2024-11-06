@@ -14,62 +14,51 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Component
 public class ExampleGreetingBotMenuSectionProvider {
 
     @EntryPoint
-    public BotEntryPoint provideMenuSection() {
-        // TODO: 16.01.2024 Add keyboard row and col methods to add keyboard
-        // TODO: 16.01.2024 add methods for operating with last message (remove, edit)
-        // TODO: 16.01.2024 add steps reuse feature, rootStep as string and annotation for step adding
-        // TODO: 16.01.2024 add method exceptionHandler for step
-        // TODO: 16.01.2024 Try to generify UserMessageContainer to work with UserContext inheritance
-        // TODO: 16.01.2024 add waitAnswer method with waiting time and do smth on timeout (maybe we need timestamp)
-        // TODO: 16.01.2024 add method sleep() with sleep time as parameter
+    public BotEntryPoint example() {
         return BotEntryPointBuilder
                 .name("first")
                 .selector(s -> "/start".equals(s.text()))
-                .rootStep("rootStep")
+                .stepsChain(rootStep())
                 .build();
-    }
-
-    @StepsChain
-    public BotStepsChain getBotStepsChain() {
-        return rootStep();
     }
 
     public BotStepsChain rootStep() {
         return BotStepsChain.builder()
                 .name("rootStep")
-                .putContextData("initYear", null)
+                .putContextData("initYear", 1995)
                 .message("What's your name?")
                 .waitAnswer()
                 .putMessageTextToContext("name")
-                .nextStep(nextStep2());
+                .nextStep(askYear());
     }
 
-    public BotStepsChain nextStep2() {
+    public BotStepsChain askYear() {
         return BotStepsChain.builder()
-                .name("nextStep2")
+                .name("askYear")
                 .removeLastMessage()
                 .fKeyboard("Year of birth?", """
-                        < | #{#initYear} |  #{#initYear+1} | #{#initYear+2} | >
+                        < | #{#initYear} |  #{#initYear+1} | #{#initYear+2} | #{#initYear+3} | >
                         """)
                 .waitAnswer()
-                .ifTrue(s -> s.message().text().equals("<"))
-                    .modifyContextDataAsInt("initYear", year -> year - 3).repeatCurrentStep()
-                .ifTrue(s -> s.message().text().equals(">"))
-                    .modifyContextDataAsInt("initYear", year -> year + 3).repeatCurrentStep()
+                .ifKeyboardPressed("<").modifyContextDataAsInt("initYear", year -> year - 3).repeatCurrentStep()
+                .ifKeyboardPressed(">").modifyContextDataAsInt("initYear", year -> year + 3).repeatCurrentStep()
                 .putMessageTextToContext("year")
-                .nextStep(month());
+                .nextStep(askMonth());
     }
 
-    public BotStepsChain month() {
+    public BotStepsChain askMonth() {
         return BotStepsChain.builder()
-                .name("month")
+                .name("askMonth")
                 .removeLastMessage()
                 .message(s -> {
-                    final List<Object> months = Arrays.stream(Month.values()).map(Enum::name).map(t -> (Object) t).collect(Collectors.toList());
+                    List<Object> months = Arrays.stream(Month.values())
+                            .map(m -> (Object) m.name())
+                            .collect(Collectors.toList());
                     return BotMessageReply.builder()
                             .text("Month of birth?")
                             .simpleKeyboard(StreamEx.ofSubLists(months, 3).toList())
@@ -77,27 +66,21 @@ public class ExampleGreetingBotMenuSectionProvider {
                 })
                 .waitAnswer()
                 .putMessageTextToContext("month")
-                .nextStep(day());
+                .nextStep(askDay());
     }
 
-    public BotStepsChain day() {
+    public BotStepsChain askDay() {
         return BotStepsChain.builder()
-                .name("day")
+                .name("askDay")
                 .removeLastMessage()
                 .message(s -> {
-                    final Integer year = Integer.parseInt(s.context().getAsString("year").get());
+                    final Integer year = s.context().getAsInt("year").get();
                     final String month = s.context().getAsString("month").get();
                     final LocalDate localDate = LocalDate.of(year, Month.valueOf(month), 1);
                     final List<Object> collect = localDate
                             .minusDays(localDate.getDayOfWeek().getValue() - 1)
                             .datesUntil(localDate.plusMonths(1))
-                            .map(dt -> {
-                                if (dt.getMonth().equals(localDate.getMonth())) {
-                                    return dt.getDayOfMonth();
-                                } else {
-                                    return "-";
-                                }
-                            })
+                            .map(dt -> dt.getMonth().equals(localDate.getMonth()) ? dt.getDayOfMonth() : "-")
                             .collect(Collectors.toList());
                     return BotMessageReply.builder()
                             .text("Day of birth?")
@@ -108,7 +91,7 @@ public class ExampleGreetingBotMenuSectionProvider {
                 })
                 .waitAnswer()
                 .removeLastMessage()
-                .ifTrue(s -> s.message().text().equals("-")).nextStep("")
+                .ifKeyboardPressed("-").repeatCurrentStep()
                 .putMessageTextToContext("day")
                 .nextStep(greeting());
     }
@@ -117,22 +100,14 @@ public class ExampleGreetingBotMenuSectionProvider {
         return BotStepsChain.builder()
                 .name("greeting")
                 .removeLastMessage()
-                .message(s -> {
-                    final String name = s.context().getAsString("name").get();
-                    final int day = Integer.parseInt(s.context().getAsString("day").get());
-                    final int year = Integer.parseInt(s.context().getAsString("year").get());
+                .execute(s -> {
+                    final int day = s.context().getAsInt("day").get();
+                    final int year = s.context().getAsInt("year").get();
                     final Month month = Month.valueOf(s.context().getAsString("month").get());
                     final long count = LocalDate.of(year, month, day).datesUntil(LocalDate.now()).count();
-                    final String hi_ = new StringBuilder("Hi ")
-                            .append(name)
-                            .append("! You are ")
-                            .append(count)
-                            .append(" days old :)")
-                            .toString();
-
-
-                    return BotMessageReply.builder().text(hi_).build();
+                    s.context().put("count", count);
                 })
+                .message("Hi #{#name}! You are #{#count} days old :)")
                 .finish();
     }
 }
