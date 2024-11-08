@@ -3,6 +3,7 @@ package link.buzalex.models.step;
 import link.buzalex.models.action.*;
 import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessageReply;
+import link.buzalex.models.message.BotMessageReplyBuilder;
 import link.buzalex.utils.BotUtils;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
-    List<BaseStepAction> actions = new ArrayList<>();
+    final List<BaseStepAction> actions = new ArrayList<>();
     final BotStepBuilder stepBuilder;
 
     BaseActionsBuilder(BotStepBuilder stepBuilder) {
@@ -48,6 +49,13 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
         return this.message(new BotMessageReply(message, BotUtils.convertStringToKeyboardList(keyboard)));
     }
 
+    public T keyboard(String message, List<List<Object>> keyboard) {
+        return this.message(BotMessageReply.builder().text(message).simpleKeyboard(keyboard).build());
+    }
+
+    public T keyboard(String message, Function<UserMessageContainer, List<List<Object>>> keyboardFunc) {
+        return this.message(c->BotMessageReply.builder().text(message).simpleKeyboard(keyboardFunc.apply(c)).build());
+    }
 
     @SuppressWarnings("unchecked")
     public T execute(Consumer<UserMessageContainer> executor) {
@@ -59,11 +67,6 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
     public T useStep(String stepName) {
         actions.add(new ReuseStepsChainAction(stepName));
         return (T) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public ConditionalActionsBuilder<T> ifTrue(Predicate<UserMessageContainer> condition) {
-        return new ConditionalActionsBuilder<>((T) this, condition);
     }
 
     @SuppressWarnings("unchecked")

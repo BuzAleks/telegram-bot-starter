@@ -18,11 +18,11 @@ public class BotTextExpressionEvaluator {
     private static final Logger LOG = LoggerFactory.getLogger(BotTextExpressionEvaluator.class);
 
     private final ExpressionParser parser = new SpelExpressionParser();
-    private final StandardEvaluationContext parserContext = new StandardEvaluationContext();
     private final String open = "#{";
     private final String close = "}";
 
     public String evaluate(String text, Map<String, Object> context) {
+        final StandardEvaluationContext parserContext = new StandardEvaluationContext();
         parserContext.setVariables(context);
         String formattedText = text;
         String[] strings = StringUtils.substringsBetween(text, open, close);

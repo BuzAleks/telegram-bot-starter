@@ -9,14 +9,17 @@ public class ConditionalActionsBuilder<T extends BaseActionsBuilder<T>> extends 
 
     final T parentBuilder;
     final Predicate<UserMessageContainer> condition;
+     Predicate<UserMessageContainer> or;
+     Predicate<UserMessageContainer> and;
 
-    public ConditionalActionsBuilder(T parentBuilder, Predicate<UserMessageContainer> condition) {
+     ConditionalActionsBuilder(T parentBuilder, Predicate<UserMessageContainer> condition) {
         super(parentBuilder.stepBuilder);
         this.parentBuilder = parentBuilder;
         this.condition = condition;
     }
 
     public T finish() {
+
         parentBuilder.actions.add(new ConditionalAction(this.actions, condition, null, null, true));
         return parentBuilder;
     }

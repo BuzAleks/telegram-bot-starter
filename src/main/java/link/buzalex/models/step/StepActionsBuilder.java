@@ -1,9 +1,17 @@
 package link.buzalex.models.step;
 
+import link.buzalex.models.context.UserMessageContainer;
+
+import java.util.function.Predicate;
+
 public class StepActionsBuilder extends BaseActionsBuilder<StepActionsBuilder> {
 
-    public StepActionsBuilder(BotStepBuilder stepBuilder) {
+    StepActionsBuilder(BotStepBuilder stepBuilder) {
         super(stepBuilder);
+    }
+
+    public ConditionalActionsBuilder<StepActionsBuilder> ifTrue(Predicate<UserMessageContainer> condition) {
+        return new ConditionalActionsBuilder<>(this, condition);
     }
 
     public AnswerActionsBuilder waitAnswer() {

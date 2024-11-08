@@ -1,5 +1,6 @@
 package link.buzalex.models.message;
 
+import link.buzalex.utils.BotUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public final class BotMessageReplyBuilder {
     }
 
     public BotMessageReplyBuilder simpleKeyboard(List<List<Object>> keyboard) {
-        this.keyboard = keyboard==null? null: keyboard.stream().map(s -> s.stream().map(t -> Pair.of(t.toString(), t.toString())).toList()).toList();
+        this.keyboard = BotUtils.convertFromSimpleKeyboard(keyboard);
         return this;
     }
 

@@ -44,7 +44,9 @@ public class BotUtils {
     public static InlineKeyboardMarkup convertStringToKeyboard(String input) {
         return convertToInlineKeyboard(convertStringToKeyboardList(input));
     }
-
+    public static List<List<Pair<String, String>>> convertFromSimpleKeyboard(List<List<Object>> keyboard){
+        return keyboard==null? null: keyboard.stream().map(s -> s.stream().map(t -> Pair.of(t.toString(), t.toString())).toList()).toList();
+    }
     public static List<List<Pair<String, String>>> convertStringToKeyboardList(String input) {
         List<List<Pair<String, String>>> result = new ArrayList<>();
 

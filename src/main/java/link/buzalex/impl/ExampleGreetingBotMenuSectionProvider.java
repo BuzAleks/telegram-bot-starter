@@ -1,10 +1,9 @@
 package link.buzalex.impl;
 
 import link.buzalex.annotation.EntryPoint;
-import link.buzalex.annotation.StepsChain;
+import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.menu.BotEntryPointBuilder;
-import link.buzalex.models.message.BotMessageReply;
 import link.buzalex.models.step.BotStepsChain;
 import one.util.streamex.StreamEx;
 import org.springframework.stereotype.Component;
@@ -45,8 +44,8 @@ public class ExampleGreetingBotMenuSectionProvider {
                         < | #{#initYear} |  #{#initYear+1} | #{#initYear+2} | #{#initYear+3} | >
                         """)
                 .waitAnswer()
-                .ifKeyboardPressed("<").modifyContextDataAsInt("initYear", year -> year - 3).repeatCurrentStep()
-                .ifKeyboardPressed(">").modifyContextDataAsInt("initYear", year -> year + 3).repeatCurrentStep()
+                .ifKeyboardPressed("<").modifyContextDataAsInt("initYear", year -> year - 4).repeatCurrentStep()
+                .ifKeyboardPressed(">").modifyContextDataAsInt("initYear", year -> year + 4).repeatCurrentStep()
                 .putMessageTextToContext("year")
                 .nextStep(askMonth());
     }
@@ -55,14 +54,11 @@ public class ExampleGreetingBotMenuSectionProvider {
         return BotStepsChain.builder()
                 .name("askMonth")
                 .removeLastMessage()
-                .message(s -> {
+                .keyboard("Month of birth?", s -> {
                     List<Object> months = Arrays.stream(Month.values())
                             .map(m -> (Object) m.name())
                             .collect(Collectors.toList());
-                    return BotMessageReply.builder()
-                            .text("Month of birth?")
-                            .simpleKeyboard(StreamEx.ofSubLists(months, 3).toList())
-                            .build();
+                    return StreamEx.ofSubLists(months, 3).toList();
                 })
                 .waitAnswer()
                 .putMessageTextToContext("month")
@@ -73,22 +69,7 @@ public class ExampleGreetingBotMenuSectionProvider {
         return BotStepsChain.builder()
                 .name("askDay")
                 .removeLastMessage()
-                .message(s -> {
-                    final Integer year = s.context().getAsInt("year").get();
-                    final String month = s.context().getAsString("month").get();
-                    final LocalDate localDate = LocalDate.of(year, Month.valueOf(month), 1);
-                    final List<Object> collect = localDate
-                            .minusDays(localDate.getDayOfWeek().getValue() - 1)
-                            .datesUntil(localDate.plusMonths(1))
-                            .map(dt -> dt.getMonth().equals(localDate.getMonth()) ? dt.getDayOfMonth() : "-")
-                            .collect(Collectors.toList());
-                    return BotMessageReply.builder()
-                            .text("Day of birth?")
-                            .simpleKeyboard(
-                                    StreamEx.ofSubLists(collect, 7).toList()
-                            )
-                            .build();
-                })
+                .keyboard("Day of birth?", this::getCalendarKeyboard)
                 .waitAnswer()
                 .removeLastMessage()
                 .ifKeyboardPressed("-").repeatCurrentStep()
@@ -109,5 +90,18 @@ public class ExampleGreetingBotMenuSectionProvider {
                 })
                 .message("Hi #{#name}! You are #{#count} days old :)")
                 .finish();
+    }
+
+    private List<List<Object>> getCalendarKeyboard(UserMessageContainer s) {
+        final Integer year = s.context().getAsInt("year").get();
+        final String month = s.context().getAsString("month").get();
+        LocalDate startDate = LocalDate.of(year, Month.valueOf(month), 1);
+        int offset = startDate.getDayOfWeek().getValue() - 1;
+        int calendarDays = (offset + startDate.lengthOfMonth()) > 35 ? 42 : 35;
+        List<Object> calendarGrid = startDate.minusDays(offset)
+                .datesUntil(startDate.plusDays(calendarDays - offset))
+                .map(date -> date.getMonth().equals(startDate.getMonth()) ? date.getDayOfMonth() : "-")
+                .collect(Collectors.toList());
+        return StreamEx.ofSubLists(calendarGrid, 7).toList();
     }
 }

@@ -1,15 +1,24 @@
 package link.buzalex.models.step;
 
 import link.buzalex.models.action.ExecuteAction;
+import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessage;
 
-import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class AnswerActionsBuilder extends BaseActionsBuilder<AnswerActionsBuilder> {
 
-    public AnswerActionsBuilder(BotStepBuilder stepBuilder) {
+    AnswerActionsBuilder(BotStepBuilder stepBuilder) {
         super(stepBuilder);
+    }
+
+    public ConditionalActionsBuilder<AnswerActionsBuilder> ifTrue(Predicate<UserMessageContainer> condition) {
+        return new ConditionalActionsBuilder<>(this, condition);
+    }
+
+    public ConditionalActionsBuilder<AnswerActionsBuilder> ifKeyboardPressed(String key) {
+        return new ConditionalActionsBuilder<>(this, s -> key.equals(s.message().text()));
     }
 
     public BotStepsChain finish() {
@@ -36,9 +45,5 @@ public class AnswerActionsBuilder extends BaseActionsBuilder<AnswerActionsBuilde
 
     public AnswerActionsBuilder putMessageTextToContext(String key) {
         return putMessageToContext(key, BotMessage::text);
-    }
-
-    public ConditionalActionsBuilder<AnswerActionsBuilder> ifKeyboardPressed(String key) {
-        return new ConditionalActionsBuilder<>(this, s -> Optional.ofNullable(s.message().text()).orElse("").equals(key));
     }
 }
