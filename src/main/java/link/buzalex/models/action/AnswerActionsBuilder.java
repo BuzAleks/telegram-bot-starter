@@ -1,8 +1,11 @@
-package link.buzalex.models.step;
+package link.buzalex.models.action;
 
-import link.buzalex.models.action.ExecuteAction;
+import link.buzalex.models.actions.ConditionalAction;
+import link.buzalex.models.actions.ExecuteAction;
+import link.buzalex.models.actions.FinishStepAction;
 import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessage;
+import link.buzalex.models.step.BotStepsChain;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -10,36 +13,42 @@ import java.util.function.Predicate;
 public class AnswerActionsBuilder extends BaseActionsBuilder<AnswerActionsBuilder> {
 
     AnswerActionsBuilder(BotStepBuilder stepBuilder) {
-        super(stepBuilder);
+        super(stepBuilder.stepActions,stepBuilder);
     }
 
     public ConditionalActionsBuilder<AnswerActionsBuilder> ifTrue(Predicate<UserMessageContainer> condition) {
-        return new ConditionalActionsBuilder<>(this, condition);
+
+        ConditionalAction conditionalAction = new ConditionalAction(condition);
+        putAction(conditionalAction);
+
+        return new ConditionalActionsBuilder<>(this, conditionalAction);
     }
 
     public ConditionalActionsBuilder<AnswerActionsBuilder> ifKeyboardPressed(String key) {
-        return new ConditionalActionsBuilder<>(this, s -> key.equals(s.message().text()));
+        ConditionalAction conditionalAction = new ConditionalAction(s -> key.equals(s.message().text()));
+        putAction(conditionalAction);
+        return new ConditionalActionsBuilder<>(this, conditionalAction);
     }
 
     public BotStepsChain finish() {
-        stepBuilder.answerActions = this.actions;
+        putAction(new FinishStepAction());
         stepBuilder.nextStep = null;
         return stepBuilder.build();
     }
 
     public BotStepsChain nextStep(BotStepsChain nextStep) {
-        stepBuilder.answerActions = this.actions;
+        putAction(new FinishStepAction(nextStep.name()));
         stepBuilder.nextStep = nextStep;
         return stepBuilder.build();
     }
 
     public AnswerActionsBuilder putMessageToContext(String key) {
-        this.actions.add(new ExecuteAction(s -> s.context().put(key, s.message())));
+        putAction(new ExecuteAction(s -> s.context().put(key, s.message())));
         return this;
     }
 
     public AnswerActionsBuilder putMessageToContext(String key, Function<BotMessage, Object> mapFunc) {
-        this.actions.add(new ExecuteAction(s -> s.context().put(key, mapFunc.apply(s.message()))));
+        putAction(new ExecuteAction(s -> s.context().put(key, mapFunc.apply(s.message()))));
         return this;
     }
 

@@ -2,8 +2,8 @@ package link.buzalex.impl;
 
 import link.buzalex.api.BotItemsHolder;
 import link.buzalex.exception.BotItemInitializationException;
-import link.buzalex.models.action.BaseStepAction;
-import link.buzalex.models.action.ConditionalAction;
+import link.buzalex.models.actions.BaseStepAction;
+import link.buzalex.models.actions.ConditionalAction;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.step.BotStep;
 import link.buzalex.models.step.BotStepsChain;
@@ -57,9 +57,8 @@ public class BotItemsInitializer {
 
     private void collect(BotStepsChain step) {
         putStep(step.convertToPlainStep());
-        LOG.debug("Step [{}] initialized", step.name());
-        checkActions(step.stepActions());
-        checkActions(step.answerActions());
+        LOG.debug("Step [{}] initialized: \n{}", step.name(), step);
+        checkActions(step.stepActions().values());
         if (step.nextStep() == null) return;
         collect(step.nextStep());
     }

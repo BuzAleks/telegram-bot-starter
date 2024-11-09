@@ -1,34 +1,32 @@
-package link.buzalex.models.step;
+package link.buzalex.models.action;
 
-import link.buzalex.models.action.*;
+import link.buzalex.models.actions.*;
 import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessageReply;
-import link.buzalex.models.message.BotMessageReplyBuilder;
 import link.buzalex.utils.BotUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
-    final List<BaseStepAction> actions = new ArrayList<>();
+    final ActionsContainer stepActions;
     final BotStepBuilder stepBuilder;
 
-    BaseActionsBuilder(BotStepBuilder stepBuilder) {
+    BaseActionsBuilder(ActionsContainer stepActions, BotStepBuilder stepBuilder) {
+        this.stepActions = stepActions;
         this.stepBuilder = stepBuilder;
     }
 
     @SuppressWarnings("unchecked")
     public T removeLastMessage() {
-        actions.add(new RemoveMessageAction(true));
+        putAction( new RemoveMessageAction(true));
         return (T) this;
     }
 
     @SuppressWarnings("unchecked")
     public T message(Long user, Function<UserMessageContainer, BotMessageReply> message) {
-        actions.add(new SendMessageAction(user, message));
+        putAction(new SendMessageAction(user, message));
         return (T) this;
     }
 
@@ -54,42 +52,62 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
     }
 
     public T keyboard(String message, Function<UserMessageContainer, List<List<Object>>> keyboardFunc) {
-        return this.message(c->BotMessageReply.builder().text(message).simpleKeyboard(keyboardFunc.apply(c)).build());
+        return this.message(c -> BotMessageReply.builder().text(message).simpleKeyboard(keyboardFunc.apply(c)).build());
     }
 
     @SuppressWarnings("unchecked")
     public T execute(Consumer<UserMessageContainer> executor) {
-        actions.add(new ExecuteAction(executor));
+        putAction(new ExecuteAction(executor));
         return (T) this;
     }
 
     @SuppressWarnings("unchecked")
     public T useStep(String stepName) {
-        actions.add(new ReuseStepsChainAction(stepName));
+        putAction(new ReuseStepsChainAction(stepName));
         return (T) this;
     }
 
     @SuppressWarnings("unchecked")
     public T putContextData(String key, Object data) {
-        actions.add(new ExecuteAction(s -> s.context().put(key, data)));
+        putAction(new ExecuteAction(s -> s.context().put(key, data)));
         return (T) this;
     }
 
     @SuppressWarnings("unchecked")
     public T modifyContextData(String key, Function<Object, Object> func) {
-        actions.add(new ExecuteAction(s -> s.context().modifyIfPresents(key, func)));
+        putAction(new ExecuteAction(s -> s.context().modifyIfPresents(key, func)));
         return (T) this;
     }
 
     @SuppressWarnings("unchecked")
     public T modifyContextDataAsString(String key, Function<String, Object> func) {
-        actions.add(new ExecuteAction(s -> s.context().modifyIfPresentsAsString(key, func)));
+        putAction(new ExecuteAction(s -> s.context().modifyIfPresentsAsString(key, func)));
         return (T) this;
     }
 
     @SuppressWarnings("unchecked")
     public T modifyContextDataAsInt(String key, Function<Integer, Object> func) {
-        actions.add(new ExecuteAction(s -> s.context().modifyIfPresentsAsInt(key, func)));
+        putAction(new ExecuteAction(s -> s.context().modifyIfPresentsAsInt(key, func)));
         return (T) this;
+    }
+
+    void putAction(BaseStepAction action){
+        String methodName = StackWalker.getInstance()
+                .walk(frames -> frames.skip(1)
+                        .findFirst()
+                        .map(StackWalker.StackFrame::getMethodName)
+                        .orElse("Unknown"));
+        if (this.stepActions.containsKey(methodName)){
+            int counter = 1;
+            for (int i = 0; i < counter; i++) {
+                String newName = methodName+"#"+counter;
+                if (!this.stepActions.containsKey(newName)){
+                    methodName = newName;
+                    break;
+                }
+            }
+        }
+        action.setName(methodName);
+        this.stepActions.put(methodName, action);
     }
 }

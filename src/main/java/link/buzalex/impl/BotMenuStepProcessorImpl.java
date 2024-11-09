@@ -4,19 +4,20 @@ import link.buzalex.api.BotItemsHolder;
 import link.buzalex.api.BotMenuActionsExecutor;
 import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.UserContext;
-import link.buzalex.models.action.BaseStepAction;
-import link.buzalex.models.action.ConditionalAction;
-import link.buzalex.models.context.UserContextWrapper;
-import link.buzalex.models.context.UserMessageContainer;
+import link.buzalex.models.action.ActionStackItem;
+import link.buzalex.models.action.ActionStackObject;
+import link.buzalex.models.actions.BaseStepAction;
+import link.buzalex.models.actions.ConditionalAction;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.step.BotStep;
+import link.buzalex.utils.ActionStackUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Deque;
 
 @Component
 public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
@@ -32,69 +33,35 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
     @Override
     public void processStep(BotMessage message, UserContext user) {
-        LOG.debug("Message processing is being started. Menu section: {}, steps: {}", user.getMenuSection(), user.getMenuSteps());
+        LOG.debug("Message processing is being started. Menu section: {}, steps: {}", user.getEntryPoint(), user.getStack());
         String menuSection = determineMenuSection(message, user);
         if (menuSection == null) {
             LOG.warn("Menu section cannot be determined");
             return;
         }
+        Deque<ActionStackItem> stack = user.getStack();
 
-        if (!user.getMenuSteps().isEmpty()) {
-            String prevStep = user.getMenuSteps().get(user.getMenuSteps().size() - 1);
-            BotStep step = stepsHolder.getStep(prevStep);
-            String nextStep = processPrevStepAndReturnNext(step, message, user);
-            if (nextStep != null) {
-                pushNextStep(user, nextStep);
-            } else {
-                finishMenu(user);
-            }
+        ActionStackObject cursor;
+
+        if (stack.isEmpty()) {
+            String rootStepName = stepsHolder.getEntryPoint(menuSection).rootStepName();
+            BotStep step = stepsHolder.getStep(rootStepName);
+            BaseStepAction action = step.stepActions().getFirst();
+            cursor = new ActionStackObject(step, action, null);
+            LOG.debug("First step -> {}, {}", rootStepName, step);
         } else {
-            user.getMenuSteps().add(stepsHolder.getEntryPoint(menuSection).rootStepName());
+            cursor = ActionStackUtils.convert(stack.pop(), stepsHolder);
         }
 
-        if (!user.getMenuSteps().isEmpty()) {
-            String currStep = user.getMenuSteps().get(user.getMenuSteps().size() - 1);
-            BotStep step = stepsHolder.getStep(currStep);
-            processCurrentStep(step, message, user);
-
-            while (step.answerActions() == null) {
-                if (step.nextStepName() == null) {
-                    finishMenu(user);
-                    break;
-                } else {
-                    pushNextStep(user, step.nextStepName());
-                    step = stepsHolder.getStep(step.nextStepName());
-                    processCurrentStep(step, message, user);
-                }
-            }
-            if (step.nextStepName()==null){
-                finishMenu(user);
-            }
+        while (cursor != null) {
+            LOG.debug("Cursor-> {}", cursor);
+            cursor = actionsExecutor.executeAndMoveCursor(message, user, cursor);
         }
-    }
-
-    private void pushNextStep(UserContext user, String nextStep) {
-        List<String> menuSteps = user.getMenuSteps();
-        menuSteps = menuSteps.stream().takeWhile(s -> s.equals(nextStep)).collect(Collectors.toList());
-        if (menuSteps.size() != user.getMenuSteps().size()) {
-            menuSteps.add(nextStep);
-            user.setMenuSteps(menuSteps);
-            LOG.debug("Steps rolled back to: {}", nextStep);
-        } else {
-            user.getMenuSteps().add(nextStep);
-            LOG.debug("New step pushed: {}", nextStep);
-        }
-    }
-
-    private void finishMenu(UserContext user) {
-        LOG.debug("MenuSection [{}] finished with steps: {}", user.getMenuSection(), user.getMenuSteps());
-        user.setMenuSection(null);
-        user.getMenuSteps().clear();
     }
 
     private String determineMenuSection(BotMessage message, UserContext user) {
         BotEntryPoint botEntryPoint = null;
-        if (user.getMenuSection() == null) {
+        if (user.getEntryPoint() == null) {
             Integer minOrder = null;
             for (BotEntryPoint botAction : stepsHolder.getEntryPoints().values()) {
                 if (botAction.selector().test(message)) {
@@ -107,45 +74,8 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
         }
         if (botEntryPoint != null) {
             LOG.debug("Chosen menu section: {}", botEntryPoint.name());
-            user.setMenuSection(botEntryPoint.name());
+            user.setEntryPoint(botEntryPoint.name());
         }
-        return user.getMenuSection();
-    }
-
-    private void processCurrentStep(BotStep actions, BotMessage botMessage, UserContext user) {
-        LOG.debug("Current step is being processed: {}", actions.name());
-        for (BaseStepAction stepAction : actions.stepActions()) {
-            actionsExecutor.execute(botMessage, user, stepAction);
-        }
-    }
-
-    private String processPrevStepAndReturnNext(BotStep actions, BotMessage botMessage, UserContext userContext) {
-        LOG.debug("Previous step is being processed: {}", actions.name());
-
-        String nextStepName = null;
-
-        for (BaseStepAction action : actions.answerActions()) {
-
-            if (action instanceof ConditionalAction conditionalAction) {
-                if (conditionalAction.condition().test(new UserMessageContainer(botMessage, new UserContextWrapper(userContext)))) {
-                    LOG.debug("Condition is being processed on step: {}", actions.name());
-                    for (BaseStepAction conditionaledAction : conditionalAction.conditionalActions()) {
-                        actionsExecutor.execute(botMessage, userContext, conditionaledAction);
-                    }
-
-                    nextStepName = conditionalAction.nextStepName();
-
-                    if (conditionalAction.finish()) {
-                        LOG.debug("Condition finished");
-                        break;
-                    }
-                }
-            } else {
-                actionsExecutor.execute(botMessage, userContext, action);
-            }
-        }
-
-
-        return nextStepName == null ? actions.nextStepName() : nextStepName;
+        return user.getEntryPoint();
     }
 }

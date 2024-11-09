@@ -1,12 +1,9 @@
 package link.buzalex.models.step;
 
-import link.buzalex.models.action.BaseStepAction;
-
-import java.util.List;
+import link.buzalex.models.action.ActionsContainer;
 
 public record BotStep(
         String name,
-        List<BaseStepAction> stepActions,
-        List<BaseStepAction> answerActions,
+        ActionsContainer stepActions,
         String nextStepName) {
 }

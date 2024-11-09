@@ -1,20 +1,20 @@
 package link.buzalex.api;
 
-import java.util.List;
+import link.buzalex.models.action.ActionStackItem;
+
+import java.util.Deque;
 import java.util.Map;
 
 public interface UserContext {
+    Deque<ActionStackItem> getStack();
+
     Long getId();
 
     void setId(Long id);
 
     Map<String, Object> getData();
 
-    String getMenuSection();
+    String getEntryPoint();
 
-    void setMenuSection(String menuSection);
-
-    List<String> getMenuSteps();
-
-    void setMenuSteps(List<String> menuSteps);
+    void setEntryPoint(String entryPoint);
 }

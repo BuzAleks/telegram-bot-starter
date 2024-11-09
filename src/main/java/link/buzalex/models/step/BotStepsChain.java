@@ -1,17 +1,15 @@
 package link.buzalex.models.step;
 
-import link.buzalex.models.action.BaseStepAction;
-
-import java.util.List;
+import link.buzalex.models.action.ActionsContainer;
+import link.buzalex.models.action.BotStepBuilder;
 
 public record BotStepsChain(
         String name,
-        List<BaseStepAction> stepActions,
-        List<BaseStepAction> answerActions,
+        ActionsContainer stepActions,
         BotStepsChain nextStep) {
 
     public BotStep convertToPlainStep() {
-        return new BotStep(name, stepActions, answerActions, nextStep == null ? null : nextStep.name);
+        return new BotStep(name, stepActions, nextStep == null ? null : nextStep.name);
     }
 
     public static BotStepBuilder builder() {

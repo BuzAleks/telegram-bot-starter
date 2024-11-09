@@ -1,24 +1,27 @@
 package link.buzalex.models.context;
 
 import link.buzalex.api.UserContext;
+import link.buzalex.models.action.ActionStackItem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class UserContextImpl implements UserContext {
     private Long id;
     private Map<String, Object> data = new HashMap<>();
-    private String menuSection;
-    private List<String> menuSteps = new ArrayList<>();
+    private String entryPoint;
+    private final Deque<ActionStackItem> actionsStack = new LinkedList<>();
+
+    @Override
+    public Deque<ActionStackItem> getStack() {
+        return actionsStack;
+    }
 
     public UserContextImpl() {
     }
 
-    public UserContextImpl(Long id, String menuSection) {
+    public UserContextImpl(Long id, String entryPoint) {
         this.id = id;
-        this.menuSection = menuSection;
+        this.entryPoint = entryPoint;
     }
 
     public Long getId() {
@@ -37,20 +40,12 @@ public class UserContextImpl implements UserContext {
         data.put(key, value);
     }
 
-    public String getMenuSection() {
-        return menuSection;
+    public String getEntryPoint() {
+        return entryPoint;
     }
 
-    public void setMenuSection(String menuSection) {
-        this.menuSection = menuSection;
-    }
-
-    public List<String> getMenuSteps() {
-        return menuSteps;
-    }
-
-    public void setMenuSteps(List<String> menuSteps) {
-        this.menuSteps = menuSteps;
+    public void setEntryPoint(String entryPoint) {
+        this.entryPoint = entryPoint;
     }
 
     public void setData(Map<String, Object> data) {
