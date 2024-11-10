@@ -41,7 +41,8 @@ dependencies {
     implementation 'org.telegram:telegrambots-spring-boot-starter:6.9.0'
     implementation 'org.yaml:snakeyaml'
     implementation 'one.util:streamex:0.8.2'
-
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.0'
 }
 
 test {

@@ -1,8 +1,8 @@
 package link.buzalex.models.action;
 
-import link.buzalex.models.actions.PreviousStepAction;
 import link.buzalex.models.actions.ConditionalAction;
 import link.buzalex.models.actions.FinishStepAction;
+import link.buzalex.models.actions.PreviousStepAction;
 import link.buzalex.models.actions.RepeatAnswerWaitingStepAction;
 import link.buzalex.models.step.BotStepsChain;
 
