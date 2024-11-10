@@ -7,45 +7,66 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Component
 public class BotApiServiceImpl implements BotApiService {
-    private Consumer<? super BotApiMethod> executor;
+    private Function<? super BotApiMethod, Object> executor;
 
     @Override
-    public void sendToUser(BotMessageReply message, Long id) {
-        execute(message, id);
+    public Integer sendToUser(BotMessageReply message, Long id) {
+
+        Message response = (Message) executor.apply(SendMessage.builder()
+                .text(message.text())
+                .replyMarkup(BotUtils.convertToInlineKeyboard(message.keyboard()))
+                .chatId(id)
+                .build());
+        return response.getMessageId();
     }
 
     @Override
     public void sendToUser(String message, Long id, String parseMode) {
 
-        executor.accept(SendMessage.builder()
+        executor.apply(SendMessage.builder()
                 .text(message)
                 .chatId(id)
                 .parseMode(parseMode)
                 .build());
     }
 
+    @Override
+    public void editKeyboard(BotMessageReply message, Long id, Integer messageId) {
+
+        System.out.println("CHANGING");
+        executor.apply(EditMessageReplyMarkup.builder()
+                .replyMarkup(BotUtils.convertToInlineKeyboard(message.keyboard()))
+                .messageId(messageId)
+                .chatId(id)
+                .build());
+    }
+
+    @Override
+    public void setExecutor(Function<? super BotApiMethod, Object> executor) {
+        this.executor = executor;
+    }
+
 
     public void execute(BotMessageReply message, Long id) {
 
-        executor.accept(SendMessage.builder()
+        executor.apply(SendMessage.builder()
                 .text(message.text())
                 .replyMarkup(BotUtils.convertToInlineKeyboard(message.keyboard()))
                 .chatId(id)
                 .build());
     }
 
-    public void setExecutor(Consumer<? super BotApiMethod> consumer) {
-        this.executor = consumer;
-    }
-
     @Override
     public void clear(int messageId, Long chatId) {
-        executor.accept(DeleteMessage.builder()
+        executor.apply(DeleteMessage.builder()
                 .chatId(chatId)
                 .messageId(messageId)
                 .build());

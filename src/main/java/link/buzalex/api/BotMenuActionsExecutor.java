@@ -1,8 +1,8 @@
 package link.buzalex.api;
 
-import link.buzalex.models.action.ActionStackObject;
+import link.buzalex.models.action.ActionCursor;
 import link.buzalex.models.message.BotMessage;
 
 public interface BotMenuActionsExecutor {
-    ActionStackObject executeAndMoveCursor(BotMessage botMessage, UserContext userContext, ActionStackObject cursor);
+    ActionCursor executeAndMoveCursor(BotMessage botMessage, UserContext userContext, ActionCursor cursor);
 }

@@ -9,23 +9,26 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class BotItemsHolderImpl implements BotItemsHolder {
     private final Map<String, BotEntryPoint> entryPoints = new HashMap<>();
-
     private final Map<String, BotStep> botSteps = new HashMap<>();
-
     private final Map<String, Map<String, ActionsContainer>> botStepsActions = new HashMap<>();
 
     @Override
     public ActionsContainer getStepAction(String stepName, String actionName, String subActionName) {
-        return getStepAction(stepName, subActionName == null ? actionName : actionName + "." + subActionName);
+        return getStepAction(stepName, Optional.ofNullable(subActionName)
+                .map(sub -> actionName + "." + sub)
+                .orElse(actionName));
     }
 
     @Override
     public ActionsContainer getStepAction(String stepName, String actionName) {
-        return botStepsActions.get(stepName).get(actionName);
+        return Optional.ofNullable(botStepsActions.get(stepName))
+                .map(actions -> actions.get(actionName))
+                .orElse(null);
     }
 
     @Override
@@ -35,29 +38,22 @@ public class BotItemsHolderImpl implements BotItemsHolder {
 
     @Override
     public void putStep(BotStep botStep) {
-        ActionsContainer actionsContainer = botStep.stepActions();
-        Map<String, ActionsContainer> actionsContainerMap = new HashMap<>();
-
-        while (actionsContainer != null) {
-            if (actionsContainer.getAction() instanceof ConditionalAction conditionalAction) {
-                Map<String, ActionsContainer> conditionActionsContainerMap = extractActions(conditionalAction, actionsContainer);
-                actionsContainerMap.putAll(conditionActionsContainerMap);
-            }
-            actionsContainerMap.put(actionsContainer.getName(), actionsContainer);
-            actionsContainer = actionsContainer.getNextAction();
-        }
+        Map<String, ActionsContainer> actionsContainerMap = extractActionsRecursively(botStep.stepActions(), null);
         botStepsActions.put(botStep.name(), actionsContainerMap);
         botSteps.put(botStep.name(), botStep);
     }
 
-    private static Map<String, ActionsContainer> extractActions(ConditionalAction conditionalAction, ActionsContainer actionsContainer) {
-        ActionsContainer conditionActionsContainer = conditionalAction.conditionalActions();
-        Map<String, ActionsContainer> conditionActionsContainerMap = new HashMap<>();
-        while (conditionActionsContainer != null) {
-            conditionActionsContainerMap.put(actionsContainer.getName() + "." + conditionActionsContainer.getName(), conditionActionsContainer);
-            conditionActionsContainer = conditionActionsContainer.getNextAction();
+    private Map<String, ActionsContainer> extractActionsRecursively(ActionsContainer actionsContainer, String parentName) {
+        Map<String, ActionsContainer> actionsContainerMap = new HashMap<>();
+        while (actionsContainer != null) {
+            String actionName = parentName == null ? actionsContainer.getName() : parentName + "." + actionsContainer.getName();
+            actionsContainerMap.put(actionName, actionsContainer);
+            if (actionsContainer.getAction() instanceof ConditionalAction conditionalAction) {
+                actionsContainerMap.putAll(extractActionsRecursively(conditionalAction.conditionalActions(), actionName));
+            }
+            actionsContainer = actionsContainer.getNextAction();
         }
-        return conditionActionsContainerMap;
+        return actionsContainerMap;
     }
 
     @Override
@@ -67,7 +63,7 @@ public class BotItemsHolderImpl implements BotItemsHolder {
 
     @Override
     public Map<String, BotEntryPoint> getEntryPoints() {
-        return entryPoints;
+        return Map.copyOf(entryPoints);
     }
 
     @Override
