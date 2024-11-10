@@ -4,6 +4,5 @@ import link.buzalex.models.action.ActionsContainer;
 
 public record BotStep(
         String name,
-        ActionsContainer stepActions,
-        String nextStepName) {
+        ActionsContainer stepActions) {
 }

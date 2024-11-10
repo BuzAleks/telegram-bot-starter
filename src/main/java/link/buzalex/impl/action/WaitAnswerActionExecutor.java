@@ -1,9 +1,7 @@
 package link.buzalex.impl.action;
 
 import link.buzalex.api.UserContext;
-import link.buzalex.models.action.ActionStackItem;
 import link.buzalex.models.action.ActionStackObject;
-import link.buzalex.models.actions.BaseStepAction;
 import link.buzalex.models.actions.WaitAnswerAction;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.utils.ActionStackUtils;

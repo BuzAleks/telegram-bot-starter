@@ -35,7 +35,7 @@ public class FinishStepActionExecutor extends ActionExecutor<FinishStepAction> {
             }
         } else {
             BotStep step = stepsHolder.getStep(action.nextStep());
-            return new ActionStackObject(step, step.stepActions().getFirst(), null);
+            return new ActionStackObject(step, step.stepActions(), null);
         }
     }
 }

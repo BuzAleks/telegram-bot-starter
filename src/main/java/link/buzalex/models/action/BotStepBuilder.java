@@ -5,7 +5,7 @@ import link.buzalex.models.step.BotStepsChain;
 public class BotStepBuilder {
     String name;
     BotStepsChain nextStep;
-    ActionsContainer stepActions = new ActionsContainerImpl();
+    ActionsContainer stepActions = new ActionsContainer();
 
     public BotStepBuilder() {
     }

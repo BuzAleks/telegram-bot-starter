@@ -2,7 +2,7 @@ package link.buzalex.impl;
 
 import link.buzalex.api.BotItemsHolder;
 import link.buzalex.exception.BotItemInitializationException;
-import link.buzalex.models.actions.BaseStepAction;
+import link.buzalex.models.actions.Action;
 import link.buzalex.models.actions.ConditionalAction;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.step.BotStep;
@@ -29,7 +29,7 @@ public class BotItemsInitializer {
     public BotItemsInitializer(BotItemsHolder itemsHolder) {
         this.itemsHolder = itemsHolder;
     }
-    @EventListener(ContextRefreshedEvent.class)
+//    @EventListener(ContextRefreshedEvent.class)
     void postInit(){
         if (!unreachableStepsChains.isEmpty()){
             LOG.warn("There is unreachable steps [{}]", unreachableStepsChains);
@@ -57,20 +57,20 @@ public class BotItemsInitializer {
 
     private void collect(BotStepsChain step) {
         putStep(step.convertToPlainStep());
-        LOG.debug("Step [{}] initialized: \n{}", step.name(), step);
-        checkActions(step.stepActions().values());
+//        LOG.debug("Step [{}] initialized: \n{}", step.name(), step);
+//        checkActions(step.stepActions().values());
         if (step.nextStep() == null) return;
         collect(step.nextStep());
     }
 
-    private void checkActions(List<BaseStepAction> baseStepActions) {
-        for (BaseStepAction action : baseStepActions) {
-            if (action instanceof ConditionalAction condition){
-                if (condition.nextStep() == null) continue;
-                collect(condition.nextStep());
-            }
-        }
-    }
+//    private void checkActions(List<Action> actions) {
+//        for (Action action : actions) {
+//            if (action instanceof ConditionalAction condition){
+//                if (condition.nextStep() == null) continue;
+//                collect(condition.nextStep());
+//            }
+//        }
+//    }
 
     private void putStep(BotStep step){
         if (itemsHolder.getStep(step.name())!=null){

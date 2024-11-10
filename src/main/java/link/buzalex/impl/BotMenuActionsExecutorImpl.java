@@ -4,7 +4,7 @@ import link.buzalex.api.BotMenuActionsExecutor;
 import link.buzalex.api.UserContext;
 import link.buzalex.impl.action.ActionExecutor;
 import link.buzalex.models.action.ActionStackObject;
-import link.buzalex.models.actions.BaseStepAction;
+import link.buzalex.models.actions.Action;
 import link.buzalex.models.message.BotMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +27,9 @@ public class BotMenuActionsExecutorImpl implements BotMenuActionsExecutor {
     @SuppressWarnings("unchecked")
     @Override
     public ActionStackObject executeAndMoveCursor(BotMessage botMessage, UserContext userContext, ActionStackObject cursor) {
-        BaseStepAction action = cursor.subAction() == null ? cursor.action() : cursor.subAction();
+        Action action = cursor.subAction() == null ? cursor.action().getAction() : cursor.subAction().getAction();
         ActionExecutor actionExecutor = actionExecutors.get(action.getClass());
         ActionStackObject actionStackObject = actionExecutor.executeAndMoveCursor(cursor, botMessage, userContext, action);
-        LOG.debug("Action {} executed", action.getName());
         return actionStackObject;
     }
 }

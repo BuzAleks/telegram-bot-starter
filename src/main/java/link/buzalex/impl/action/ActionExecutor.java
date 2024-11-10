@@ -2,12 +2,12 @@ package link.buzalex.impl.action;
 
 import link.buzalex.api.UserContext;
 import link.buzalex.models.action.ActionStackObject;
-import link.buzalex.models.actions.BaseStepAction;
+import link.buzalex.models.actions.Action;
 import link.buzalex.models.context.UserContextWrapper;
 import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessage;
 
-public abstract class ActionExecutor<T extends BaseStepAction> {
+public abstract class ActionExecutor<T extends Action> {
     abstract public Class<T> getActionClass();
 
     UserMessageContainer wrap(BotMessage botMessage, UserContext userContext) {

@@ -9,7 +9,7 @@ public record BotStepsChain(
         BotStepsChain nextStep) {
 
     public BotStep convertToPlainStep() {
-        return new BotStep(name, stepActions, nextStep == null ? null : nextStep.name);
+        return new BotStep(name, stepActions);
     }
 
     public static BotStepBuilder builder() {

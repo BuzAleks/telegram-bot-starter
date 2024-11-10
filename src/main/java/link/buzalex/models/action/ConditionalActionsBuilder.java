@@ -16,7 +16,7 @@ public class ConditionalActionsBuilder<T extends BaseActionsBuilder<T>> extends 
     }
 
     public T finish() {
-        putAction(new FinishStepAction());
+        putAction(new FinishStepAction(null));
         return parentBuilder;
     }
 
@@ -27,7 +27,6 @@ public class ConditionalActionsBuilder<T extends BaseActionsBuilder<T>> extends 
 
     public T nextStep(String nextStepName) {
         putAction(new FinishStepAction(nextStepName));
-        condition.setNextStepName(nextStepName);
         return parentBuilder;
     }
 

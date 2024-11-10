@@ -7,6 +7,7 @@ import link.buzalex.models.context.UserMessageContainer;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.step.BotStepsChain;
 
+import java.util.ArrayDeque;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -18,20 +19,20 @@ public class AnswerActionsBuilder extends BaseActionsBuilder<AnswerActionsBuilde
 
     public ConditionalActionsBuilder<AnswerActionsBuilder> ifTrue(Predicate<UserMessageContainer> condition) {
 
-        ConditionalAction conditionalAction = new ConditionalAction(condition);
+        ConditionalAction conditionalAction = new ConditionalAction(new ActionsContainer(), condition);
         putAction(conditionalAction);
 
         return new ConditionalActionsBuilder<>(this, conditionalAction);
     }
 
     public ConditionalActionsBuilder<AnswerActionsBuilder> ifKeyboardPressed(String key) {
-        ConditionalAction conditionalAction = new ConditionalAction(s -> key.equals(s.message().text()));
+        ConditionalAction conditionalAction = new ConditionalAction(new ActionsContainer(), s -> key.equals(s.message().text()));
         putAction(conditionalAction);
         return new ConditionalActionsBuilder<>(this, conditionalAction);
     }
 
     public BotStepsChain finish() {
-        putAction(new FinishStepAction());
+        putAction(new FinishStepAction(null));
         stepBuilder.nextStep = null;
         return stepBuilder.build();
     }

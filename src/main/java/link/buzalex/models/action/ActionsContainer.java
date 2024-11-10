@@ -1,29 +1,48 @@
 package link.buzalex.models.action;
 
-import link.buzalex.models.actions.BaseStepAction;
+import link.buzalex.models.actions.Action;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+public class ActionsContainer {
+    private String methodName;
+    private Action action;
+    private ActionsContainer nextAction;
 
-public interface ActionsContainer {
-    void put(String name, BaseStepAction action);
+    public ActionsContainer() {
+    }
 
-    void put(ActionsContainer action);
+    public ActionsContainer(String methodName, Action action) {
+        this.methodName = methodName;
+        this.action = action;
+    }
 
-    BaseStepAction get(String name);
+    public String getName() {
+        return methodName;
+    }
 
-    BaseStepAction getFirst();
+    public void setName(String methodName) {
+        this.methodName = methodName;
+    }
 
-    BaseStepAction getNext(String name);
+    public Action getAction() {
+        return action;
+    }
 
-    List<BaseStepAction> values();
+    public void setAction(Action action) {
+        this.action = action;
+    }
 
-    Map<String, BaseStepAction> getMap();
+    public ActionsContainer getNextAction() {
+        return nextAction;
+    }
 
-    LinkedList<String> getOrder();
+    public void setNextAction(ActionsContainer nextAction) {
+        this.nextAction = nextAction;
+    }
 
-    boolean containsKey(String name);
-
-
+    @Override
+    public String toString() {
+        return "ActionsContainer{" +
+                "name='" + methodName + '\'' +
+                '}';
+    }
 }

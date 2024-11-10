@@ -6,15 +6,14 @@ import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.UserContext;
 import link.buzalex.models.action.ActionStackItem;
 import link.buzalex.models.action.ActionStackObject;
-import link.buzalex.models.actions.BaseStepAction;
-import link.buzalex.models.actions.ConditionalAction;
+import link.buzalex.models.action.ActionsContainer;
+import link.buzalex.models.actions.Action;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.step.BotStep;
 import link.buzalex.utils.ActionStackUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.Deque;
@@ -46,7 +45,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
         if (stack.isEmpty()) {
             String rootStepName = stepsHolder.getEntryPoint(menuSection).rootStepName();
             BotStep step = stepsHolder.getStep(rootStepName);
-            BaseStepAction action = step.stepActions().getFirst();
+            ActionsContainer action = step.stepActions();
             cursor = new ActionStackObject(step, action, null);
             LOG.debug("First step -> {}, {}", rootStepName, step);
         } else {
