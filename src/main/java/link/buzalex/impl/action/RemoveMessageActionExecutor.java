@@ -21,6 +21,7 @@ public class RemoveMessageActionExecutor extends BasicActionExecutor<RemoveMessa
 
     @Override
     public void execute(BotMessage botMessage, UserContext userContext, RemoveMessageAction action) {
-//        apiService.clear(botMessage.messageId(), botMessage.chatId());
+        userContext.getData().remove("lasKeyboardId");
+        apiService.clear(botMessage.messageId(), botMessage.chatId());
     }
 }

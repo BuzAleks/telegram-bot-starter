@@ -2,8 +2,8 @@ package link.buzalex.impl.action;
 
 import link.buzalex.api.BotItemsHolder;
 import link.buzalex.api.UserContext;
-import link.buzalex.models.action.ActionStackItem;
 import link.buzalex.models.action.ActionCursor;
+import link.buzalex.models.action.ActionStackItem;
 import link.buzalex.models.actions.FinishStepAction;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.step.BotStep;
@@ -24,9 +24,18 @@ public class FinishStepActionExecutor extends ActionExecutor<FinishStepAction> {
 
     @Override
     public ActionCursor executeAndMoveCursor(ActionCursor cursor, BotMessage botMessage, UserContext userContext, FinishStepAction action) {
+
+        String peek = userContext.getStepsHistory().peek();
+        if (!cursor.step().name().equals(peek)){
+            userContext.getStepsHistory().push(cursor.step().name());
+        } else {
+            userContext.getStepsHistory().pop();
+        }
+
         if (action.nextStep() == null) {
-            if (userContext.getStack().isEmpty()){
+            if (userContext.getStack().isEmpty()) {
                 userContext.setEntryPoint(null);
+                userContext.getStepsHistory().clear();
                 return null;
             } else {
                 ActionStackItem pop = userContext.getStack().pop();

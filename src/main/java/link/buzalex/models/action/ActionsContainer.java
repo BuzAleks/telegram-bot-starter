@@ -43,6 +43,7 @@ public class ActionsContainer {
     public String toString() {
         return "ActionsContainer{" +
                 "name='" + methodName + '\'' +
+                "next="+nextAction+
                 '}';
     }
 }

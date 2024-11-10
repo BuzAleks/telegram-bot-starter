@@ -8,6 +8,8 @@ import java.util.Map;
 public interface UserContext {
     Deque<ActionStackItem> getStack();
 
+    Deque<String> getStepsHistory();
+
     Long getId();
 
     void setId(Long id);

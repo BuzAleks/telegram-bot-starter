@@ -10,10 +10,16 @@ public class UserContextImpl implements UserContext {
     private Map<String, Object> data = new HashMap<>();
     private String entryPoint;
     private final Deque<ActionStackItem> actionsStack = new LinkedList<>();
+    private final Deque<String> stepsHistory = new LinkedList<>();
 
     @Override
     public Deque<ActionStackItem> getStack() {
         return actionsStack;
+    }
+
+    @Override
+    public Deque<String> getStepsHistory() {
+        return stepsHistory;
     }
 
     public UserContextImpl() {

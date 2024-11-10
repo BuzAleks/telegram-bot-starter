@@ -39,13 +39,15 @@ public class ExampleGreetingBotMenuSectionProvider {
     public BotStepsChain askYear() {
         return BotStepsChain.builder()
                 .name("askYear")
-                .removeLastMessage()
                 .fKeyboard("Year of birth?", """
                         < | #{#initYear} |  #{#initYear+1} | #{#initYear+2} | #{#initYear+3} | >
+                        BACK | CANCEL
                         """)
                 .waitAnswer()
                 .ifKeyboardPressed("<").modifyContextDataAsInt("initYear", year -> year - 4).repeatCurrentStep()
                 .ifKeyboardPressed(">").modifyContextDataAsInt("initYear", year -> year + 4).repeatCurrentStep()
+                .ifKeyboardPressed("BACK").removeLastMessage().previousStep()
+                .ifKeyboardPressed("CANCEL").removeLastMessage().finish()
                 .putMessageTextToContext("year")
                 .nextStep(askMonth());
     }
@@ -53,14 +55,17 @@ public class ExampleGreetingBotMenuSectionProvider {
     public BotStepsChain askMonth() {
         return BotStepsChain.builder()
                 .name("askMonth")
-                .removeLastMessage()
                 .keyboard("Month of birth?", s -> {
                     List<Object> months = Arrays.stream(Month.values())
                             .map(m -> (Object) m.name())
                             .collect(Collectors.toList());
+                    months.add("BACK");
+                    months.add("CANCEL");
                     return StreamEx.ofSubLists(months, 3).toList();
                 })
                 .waitAnswer()
+                .ifKeyboardPressed("BACK").previousStep()
+                .ifKeyboardPressed("CANCEL").removeLastMessage().finish()
                 .putMessageTextToContext("month")
                 .nextStep(askDay());
     }
@@ -68,11 +73,11 @@ public class ExampleGreetingBotMenuSectionProvider {
     public BotStepsChain askDay() {
         return BotStepsChain.builder()
                 .name("askDay")
-                .removeLastMessage()
                 .keyboard("Day of birth?", this::getCalendarKeyboard)
                 .waitAnswer()
-                .removeLastMessage()
                 .ifKeyboardPressed("-").repeatCurrentStep()
+                .ifKeyboardPressed("BACK").previousStep()
+                .ifKeyboardPressed("CANCEL").removeLastMessage().finish()
                 .putMessageTextToContext("day")
                 .nextStep(greeting());
     }
@@ -102,6 +107,8 @@ public class ExampleGreetingBotMenuSectionProvider {
                 .datesUntil(startDate.plusDays(calendarDays - offset))
                 .map(date -> date.getMonth().equals(startDate.getMonth()) ? date.getDayOfMonth() : "-")
                 .collect(Collectors.toList());
+        calendarGrid.add("BACK");
+        calendarGrid.add("CANCEL");
         return StreamEx.ofSubLists(calendarGrid, 7).toList();
     }
 }

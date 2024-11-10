@@ -20,7 +20,7 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
         this.stepActions = stepActions;
         this.stepBuilder = stepBuilder;
         ActionsContainer container = stepActions;
-        while (container!=null){
+        while (container != null) {
             actionNames.add(container.getName());
             container = container.getNextAction();
         }
@@ -113,9 +113,8 @@ public class BaseActionsBuilder<T extends BaseActionsBuilder<T>> {
             ActionsContainer container = stepActions;
             while (container.getNextAction() != null) {
                 if (actionNames.contains(methodName)) {
-                    int counter = 1;
-                    for (int i = 0; i < counter; i++) {
-                        String newName = methodName + "#" + counter;
+                    for (int i = 1; i < 20; i++) {
+                        String newName = methodName + "#" + i;
                         if (!actionNames.contains(newName)) {
                             methodName = newName;
                             break;

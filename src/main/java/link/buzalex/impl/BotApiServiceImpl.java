@@ -40,8 +40,6 @@ public class BotApiServiceImpl implements BotApiService {
 
     @Override
     public void editKeyboard(BotMessageReply message, Long id, Integer messageId) {
-
-        System.out.println("CHANGING");
         executor.apply(EditMessageReplyMarkup.builder()
                 .replyMarkup(BotUtils.convertToInlineKeyboard(message.keyboard()))
                 .messageId(messageId)
