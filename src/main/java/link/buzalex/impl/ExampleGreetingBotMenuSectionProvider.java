@@ -75,7 +75,7 @@ public class ExampleGreetingBotMenuSectionProvider {
                 .name("askDay")
                 .keyboard("Day of birth?", this::getCalendarKeyboard)
                 .waitAnswer()
-                .ifKeyboardPressed("-").repeatCurrentStep()
+                .ifKeyboardPressed("-").repeatAnswerWaiting()
                 .ifKeyboardPressed("BACK").previousStep()
                 .ifKeyboardPressed("CANCEL").removeLastMessage().finish()
                 .putMessageTextToContext("day")

@@ -9,6 +9,8 @@ import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.step.BotStep;
 import org.springframework.stereotype.Component;
 
+import java.util.Deque;
+
 @Component
 public class FinishStepActionExecutor extends ActionExecutor<FinishStepAction> {
     private final BotItemsHolder stepsHolder;
@@ -24,14 +26,6 @@ public class FinishStepActionExecutor extends ActionExecutor<FinishStepAction> {
 
     @Override
     public ActionCursor executeAndMoveCursor(ActionCursor cursor, BotMessage botMessage, UserContext userContext, FinishStepAction action) {
-
-        String peek = userContext.getStepsHistory().peek();
-        if (!cursor.step().name().equals(peek)){
-            userContext.getStepsHistory().push(cursor.step().name());
-        } else {
-            userContext.getStepsHistory().pop();
-        }
-
         if (action.nextStep() == null) {
             if (userContext.getStack().isEmpty()) {
                 userContext.setEntryPoint(null);
@@ -39,11 +33,20 @@ public class FinishStepActionExecutor extends ActionExecutor<FinishStepAction> {
                 return null;
             } else {
                 ActionStackItem pop = userContext.getStack().pop();
-                return convert(pop, stepsHolder);
+                pushStepHistory(pop.step(), userContext.getStepsHistory());
+                return convertToCursor(pop, stepsHolder);
             }
         } else {
             BotStep step = stepsHolder.getStep(action.nextStep());
+            pushStepHistory(step.name(), userContext.getStepsHistory());
+
             return new ActionCursor(step, step.stepActions(), null);
+        }
+    }
+
+    private void pushStepHistory(String stepName, Deque<String> history){
+        if (!stepName.equals(history.peek())){
+            history.push(stepName);
         }
     }
 }

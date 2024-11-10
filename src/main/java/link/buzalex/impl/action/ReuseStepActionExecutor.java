@@ -28,7 +28,7 @@ public class ReuseStepActionExecutor extends ActionExecutor<ReuseStepsChainActio
         ActionsContainer first = step.stepActions();
 
         ActionCursor nextCursor = moveCursor(cursor);
-        userContext.getStack().push(convert(nextCursor));
+        userContext.getStack().push(convertToStack(nextCursor));
         return new ActionCursor(step, first, null);
     }
 

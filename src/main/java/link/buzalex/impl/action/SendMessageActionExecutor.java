@@ -55,19 +55,15 @@ public class SendMessageActionExecutor extends BasicActionExecutor<SendMessageAc
             wrap.context().getAsInt("lasKeyboardId")
                     .ifPresentOrElse(s -> {
                         apiService.editKeyboard(new BotMessageReply(formattedText, formattedKeyboard), userId, s);
-                                LOG.debug("Edit {}", s);
-
                             },
                             () -> {
                                 Integer id = apiService.sendToUser(new BotMessageReply(formattedText, formattedKeyboard), userId);
                                 wrap.context().put("lasKeyboardId", id);
-                                LOG.debug("Put {}", id);
                             });
 
         } else {
             userContext.getData().remove("lasKeyboardId");
             apiService.sendToUser(new BotMessageReply(formattedText, null), userId);
-            LOG.debug("Send");
 
         }
     }

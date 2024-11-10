@@ -1,8 +1,9 @@
 package link.buzalex.models.action;
 
-import link.buzalex.models.actions.BackStepAction;
+import link.buzalex.models.actions.PreviousStepAction;
 import link.buzalex.models.actions.ConditionalAction;
 import link.buzalex.models.actions.FinishStepAction;
+import link.buzalex.models.actions.RepeatAnswerWaitingStepAction;
 import link.buzalex.models.step.BotStepsChain;
 
 public class ConditionalActionsBuilder<T extends BaseActionsBuilder<T>> extends BaseActionsBuilder<ConditionalActionsBuilder<T>> {
@@ -32,7 +33,12 @@ public class ConditionalActionsBuilder<T extends BaseActionsBuilder<T>> extends 
     }
 
     public T previousStep() {
-        putAction(new BackStepAction());
+        putAction(new PreviousStepAction());
+        return parentBuilder;
+    }
+
+    public T repeatAnswerWaiting() {
+        putAction(new RepeatAnswerWaitingStepAction());
         return parentBuilder;
     }
 

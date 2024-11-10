@@ -16,8 +16,7 @@ public class WaitAnswerActionExecutor extends ActionExecutor<WaitAnswerAction> {
     @Override
     public ActionCursor executeAndMoveCursor(ActionCursor cursor, BotMessage botMessage, UserContext userContext, WaitAnswerAction action) {
         ActionCursor nextCursor = moveCursor(cursor);
-        userContext.getStack().push(convert(nextCursor));
+        userContext.getStack().push(convertToStack(nextCursor));
         return null;
     }
-
 }

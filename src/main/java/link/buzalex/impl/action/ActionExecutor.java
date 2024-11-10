@@ -19,11 +19,11 @@ public abstract class ActionExecutor<T extends Action> {
         return new UserMessageContainer(botMessage, userContextWrapper);
     }
 
-    ActionCursor convert(ActionStackItem stack, BotItemsHolder holder) {
+    ActionCursor convertToCursor(ActionStackItem stack, BotItemsHolder holder) {
         return ActionCursor.fromStack(stack, holder);
     }
 
-    ActionStackItem convert(ActionCursor cursor) {
+    ActionStackItem convertToStack(ActionCursor cursor) {
         if (cursor == null) return null;
         return cursor.convertToStack();
     }

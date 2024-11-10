@@ -45,6 +45,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             BotStep step = stepsHolder.getStep(rootStepName);
             ActionsContainer action = step.stepActions();
             cursor = new ActionCursor(step, action, null);
+            user.getStepsHistory().push(rootStepName);
             LOG.debug("First step -> {}, {}", rootStepName, step);
         } else {
             cursor = ActionCursor.fromStack(stack.pop(), stepsHolder);
