@@ -4,6 +4,8 @@ import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.BotMenuUserManager;
 import link.buzalex.api.UserContextInitializer;
 import link.buzalex.api.UserContextStorage;
+import link.buzalex.impl.event.BotEventProducer;
+import link.buzalex.models.event.BotMessageReceivedEvent;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.api.UserContext;
 import org.slf4j.Logger;
@@ -12,26 +14,25 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BotMenuUserManagerImpl implements BotMenuUserManager {
-    private static final Logger LOG = LoggerFactory.getLogger(BotMenuUserManagerImpl.class);
-
     private final UserContextStorage<UserContext> userContextStorage;
 
     private final BotMenuStepProcessor stepProcessor;
 
     private final UserContextInitializer<UserContext> userContextInitializer;
-
+    private final BotEventProducer eventProducer;
 
     public BotMenuUserManagerImpl(UserContextStorage userContextStorage,
                                   BotMenuStepProcessor stepProcessor,
-                                  UserContextInitializer userContextInitializer) {
+                                  UserContextInitializer userContextInitializer, BotEventProducer eventProducer) {
         this.userContextStorage = userContextStorage;
         this.stepProcessor = stepProcessor;
         this.userContextInitializer = userContextInitializer;
+        this.eventProducer = eventProducer;
     }
 
     @Override
     public void handleMessage(BotMessage message) {
-        LOG.debug("Got message: " + message.text());
+        eventProducer.publishEvent(new BotMessageReceivedEvent(this, message));
 
         UserContext user = userContextStorage.getUser(message.userId());
         user = user == null ? userContextInitializer.initUser(message) : user;

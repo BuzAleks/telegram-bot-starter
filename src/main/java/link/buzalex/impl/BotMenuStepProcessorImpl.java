@@ -4,9 +4,14 @@ import link.buzalex.api.BotItemsHolder;
 import link.buzalex.api.BotMenuActionsExecutor;
 import link.buzalex.api.BotMenuStepProcessor;
 import link.buzalex.api.UserContext;
+import link.buzalex.impl.event.BotEventProducer;
 import link.buzalex.models.action.ActionCursor;
 import link.buzalex.models.action.ActionStackItem;
 import link.buzalex.models.action.ActionsContainer;
+import link.buzalex.models.event.BotEntryPointFinishedEvent;
+import link.buzalex.models.event.BotEntryPointSelectedEvent;
+import link.buzalex.models.event.BotStepFinishedEvent;
+import link.buzalex.models.event.BotStepStartedEvent;
 import link.buzalex.models.menu.BotEntryPoint;
 import link.buzalex.models.message.BotMessage;
 import link.buzalex.models.step.BotStep;
@@ -19,18 +24,18 @@ import java.util.Deque;
 @Component
 public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(BotMenuStepProcessorImpl.class);
-
+    private final BotEventProducer eventProducer;
     private final BotMenuActionsExecutor actionsExecutor;
     private final BotItemsHolder stepsHolder;
 
-    public BotMenuStepProcessorImpl(BotMenuActionsExecutor actionsExecutor, BotItemsHolder stepsHolder) {
+    public BotMenuStepProcessorImpl(BotEventProducer eventProducer, BotMenuActionsExecutor actionsExecutor, BotItemsHolder stepsHolder) {
+        this.eventProducer = eventProducer;
         this.actionsExecutor = actionsExecutor;
         this.stepsHolder = stepsHolder;
     }
 
     @Override
     public void processStep(BotMessage message, UserContext user) {
-        LOG.debug("Message processing is being started. Menu section: {}, steps: {}", user.getEntryPoint(), user.getStack());
         String menuSection = determineMenuSection(message, user);
         if (menuSection == null) {
             LOG.warn("Menu section cannot be determined");
@@ -46,14 +51,25 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             ActionsContainer action = step.stepActions();
             cursor = new ActionCursor(step, action, null);
             user.getStepsHistory().push(rootStepName);
-            LOG.debug("First step -> {}, {}", rootStepName, step);
         } else {
             cursor = ActionCursor.fromStack(stack.pop(), stepsHolder);
         }
+        BotStep step = cursor.step();
+
+        if (user.getStepsHistory().isEmpty() || user.getStepsHistory().peek().equals("finish")){
+            eventProducer.publishEvent(new BotStepStartedEvent(this,user.getId(),user.getEntryPoint(),step.name()));
+        }
 
         while (cursor != null) {
-            LOG.debug("Cursor-> {}", cursor);
             cursor = actionsExecutor.executeAndMoveCursor(message, user, cursor);
+            if (cursor != null && !cursor.step().equals(step)){
+                eventProducer.publishEvent(new BotStepFinishedEvent(this,user.getId()));
+                step = cursor.step();
+            }
+        }
+        if (user.getEntryPoint() == null){
+            eventProducer.publishEvent(new BotStepFinishedEvent(this,user.getId()));
+            eventProducer.publishEvent(new BotEntryPointFinishedEvent(this,user.getId()));
         }
     }
 
@@ -71,8 +87,8 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             }
         }
         if (botEntryPoint != null) {
-            LOG.debug("Chosen menu section: {}", botEntryPoint.name());
             user.setEntryPoint(botEntryPoint.name());
+            eventProducer.publishEvent(new BotEntryPointSelectedEvent(this, user.getId(), user.getEntryPoint()));
         }
         return user.getEntryPoint();
     }

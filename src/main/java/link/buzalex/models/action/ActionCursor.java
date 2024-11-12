@@ -9,7 +9,7 @@ public record ActionCursor(BotStep step, ActionsContainer action, ActionsContain
         BotStep step = holder.getStep(stack.step());
         ActionsContainer action = holder.getStepAction(step.name(), stack.action());
         ActionsContainer subAction = null;
-        if (action.getAction() instanceof ConditionalAction) {
+        if (stack.subAction()!=null && action.getAction() instanceof ConditionalAction) {
             subAction = holder.getStepAction(step.name(), stack.action(), stack.subAction());
         }
         return new ActionCursor(step, action, subAction);
@@ -31,5 +31,10 @@ public record ActionCursor(BotStep step, ActionsContainer action, ActionsContain
             return new ActionCursor(this.step(), this.action(), nextSub);
         }
         return null;
+    }
+
+    public String getActionName() {
+        String subActionName = this.subAction() == null ? "" : "."+this.subAction().getName();
+        return this.action().getName() + subActionName;
     }
 }
