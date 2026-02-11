@@ -13,8 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
@@ -30,14 +28,14 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
 
     @Override
     public void processStep(BotMessage message, UserContext user) {
-        LOG.debug("Message processing is being started. Menu section: " + user.getMenuSection() + ", steps: " + user.getMenuSteps());
+        LOG.debug("Message processing is being started. Menu section: {}, steps: {}", user.getMenuSection(), user.getMenuSteps());
         String menuSection = determineMenuSection(message, user);
         if (menuSection == null) {
             LOG.warn("Menu section cannot be determined");
             return;
         }
 
-        if (user.getMenuSteps().size() > 0) {
+        if (!user.getMenuSteps().isEmpty()) {
             String prevStep = user.getMenuSteps().get(user.getMenuSteps().size() - 1);
             BotStep step = stepsHolder.getStep(menuSection, prevStep);
             String nextStep = processPrevStepAndReturnNext(step, message, user);
@@ -45,6 +43,7 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
                 pushNextStep(user, nextStep);
             } else {
                 finishMenu(user);
+                return;
             }
         } else {
             user.getMenuSteps().add(stepsHolder.getMenuSections().get(menuSection).rootStepName());
@@ -55,9 +54,14 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             BotStep step = stepsHolder.getStep(menuSection, currStep);
             processCurrentStep(step, message, user);
 
-            while (step.answerActions() == null) {
+            int maxIterations = 100;
+            int iterations = 0;
+
+            while (step.answerActions() == null && iterations < maxIterations) {
+                iterations++;
                 if (step.nextStepName() == null) {
                     finishMenu(user);
+                    return;
                 } else {
                     pushNextStep(user, step.nextStepName());
                     step = stepsHolder.getStep(menuSection, step.nextStepName());
@@ -65,24 +69,19 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
                 }
             }
 
+            if (iterations >= maxIterations) {
+                LOG.warn("Maximum iterations reached in step processing for menu section: {}", menuSection);
+                finishMenu(user);
+            }
         }
     }
 
     private void pushNextStep(UserContext user, String nextStep) {
-        List<String> menuSteps = user.getMenuSteps();
-        menuSteps = menuSteps.stream().takeWhile(s -> s.equals(nextStep)).collect(Collectors.toList());
-        if (menuSteps.size() != user.getMenuSteps().size()) {
-            menuSteps.add(nextStep);
-            user.setMenuSteps(menuSteps);
-            LOG.debug("Steps rolled back to: " + nextStep);
-        } else {
-            user.getMenuSteps().add(nextStep);
-            LOG.debug("New step pushed: " + nextStep);
-        }
+        user.getMenuSteps().add(nextStep);
+        LOG.debug("New step pushed: {}", nextStep);
     }
-
     private void finishMenu(UserContext user) {
-        LOG.debug("MenuSection [" + user.getMenuSection() + "] finished with steps: " + user.getMenuSteps());
+        LOG.debug("MenuSection [{}] finished with steps: {}", user.getMenuSection(), user.getMenuSteps());
         user.setMenuSection(null);
         user.getMenuSteps().clear();
     }
@@ -101,26 +100,26 @@ public class BotMenuStepProcessorImpl implements BotMenuStepProcessor {
             }
         }
         if (menuSection != null) {
-            LOG.debug("Chosen menu section: " + menuSection.name());
+            LOG.debug("Chosen menu section: {}", menuSection.name());
             user.setMenuSection(menuSection.name());
         }
         return user.getMenuSection();
     }
 
     private void processCurrentStep(BotStep actions, BotMessage botMessage, UserContext user) {
-        LOG.debug("Current step is being processed: " + actions.name());
+        LOG.debug("Current step is being processed: {}", actions.name());
         actionsExecutor.execute(botMessage, user, actions.stepActions());
     }
 
     private String processPrevStepAndReturnNext(BotStep actions, BotMessage botMessage, UserContext userContext) {
-        LOG.debug("Previous step is being processed: " + actions.name());
+        LOG.debug("Previous step is being processed: {}", actions.name());
 
         String nextStepName = null;
 
         if (actions.answerActions() != null) {
             for (ConditionalActions conditionalAction : actions.answerActions().conditionalActions()) {
                 if (conditionalAction.condition().test(new UserMessageContainer(botMessage, userContext))) {
-                    LOG.debug("Condition is being processed on step: " + actions.name());
+                    LOG.debug("Condition is being processed on step: {}", actions.name());
                     actionsExecutor.execute(botMessage, userContext, conditionalAction);
                     nextStepName = conditionalAction.nextStepName();
                     if (conditionalAction.nextStepName() == null) {
