@@ -31,9 +31,8 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
             BotMenuUserManagerImpl menuManager,
             ExceptionHandler exceptionHandler,
             BotMessageConverter messageMapper,
-            BotApiService apiService,
-            DefaultBotOptions options) {
-        super(options, properties.token);
+            BotApiService apiService) {
+        super(new DefaultBotOptions(), properties.token);
         this.menuManager = menuManager;
         this.exceptionHandler = exceptionHandler;
         this.messageMapper = messageMapper;
