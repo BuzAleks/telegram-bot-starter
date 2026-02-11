@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -30,9 +31,9 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
             BotMenuUserManagerImpl menuManager,
             ExceptionHandler exceptionHandler,
             BotMessageConverter messageMapper,
-            BotApiService apiService) {
-
-        super(properties.token);
+            BotApiService apiService,
+            DefaultBotOptions options) {
+        super(options, properties.token);
         this.menuManager = menuManager;
         this.exceptionHandler = exceptionHandler;
         this.messageMapper = messageMapper;
@@ -60,7 +61,9 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         try {
-            LOG.debug("Handled message: " + update.toString());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Handled message: {}", update);
+            }
             final BotMessage botMessage = messageMapper.convert(update);
             menuManager.handleMessage(botMessage);
         } catch (Exception e) {

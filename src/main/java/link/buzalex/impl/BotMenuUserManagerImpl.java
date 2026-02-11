@@ -20,7 +20,6 @@ public class BotMenuUserManagerImpl implements BotMenuUserManager {
 
     private final UserContextInitializer<UserContext> userContextInitializer;
 
-
     public BotMenuUserManagerImpl(UserContextStorage userContextStorage,
                                   BotMenuStepProcessor stepProcessor,
                                   UserContextInitializer userContextInitializer) {
@@ -31,7 +30,10 @@ public class BotMenuUserManagerImpl implements BotMenuUserManager {
 
     @Override
     public void handleMessage(BotMessage message) {
-        LOG.debug("Got message: " + message.text());
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Got message: {}", message.text());
+        }
 
         UserContext user = userContextStorage.getUser(message.userId());
         user = user == null ? userContextInitializer.initUser(message) : user;
