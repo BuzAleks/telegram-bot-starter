@@ -30,8 +30,8 @@ public class BotApiServiceImpl implements BotApiService {
     }
 
     @Override
-    public void editMessage(Long chatId, Integer messageId, String newText, String parseMode) {
-        executor.apply(EditMessageText.builder()
+    public EditMessageText editMessage(Long chatId, Integer messageId, String newText, String parseMode) {
+        return (EditMessageText) executor.apply(EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId)
                 .text(newText)
