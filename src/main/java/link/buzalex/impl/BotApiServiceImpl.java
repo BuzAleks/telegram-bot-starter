@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.function.Function;
 
@@ -15,14 +16,14 @@ public class BotApiServiceImpl implements BotApiService {
     private Function<? super BotApiMethod, Object> executor;
 
     @Override
-    public SendMessage sendToUser(BotMessageReply message, Long id) {
+    public Message sendToUser(BotMessageReply message, Long id) {
         return execute(message, id);
     }
 
     @Override
-    public SendMessage sendToUser(String message, Long id, String parseMode) {
+    public Message sendToUser(String message, Long id, String parseMode) {
 
-        return  (SendMessage) executor.apply(SendMessage.builder()
+        return  (Message) executor.apply(SendMessage.builder()
                 .text(message)
                 .chatId(id)
                 .parseMode(parseMode)
@@ -30,8 +31,8 @@ public class BotApiServiceImpl implements BotApiService {
     }
 
     @Override
-    public EditMessageText editMessage(Long chatId, Integer messageId, String newText, String parseMode) {
-        return (EditMessageText) executor.apply(EditMessageText.builder()
+    public Message editMessage(Long chatId, Integer messageId, String newText, String parseMode) {
+        return (Message) executor.apply(EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId)
                 .text(newText)
@@ -44,9 +45,9 @@ public class BotApiServiceImpl implements BotApiService {
         this.executor = consumer;
     }
 
-    public SendMessage execute(BotMessageReply message, Long id) {
+    public Message execute(BotMessageReply message, Long id) {
 
-        return (SendMessage) executor.apply(SendMessage.builder()
+        return (Message) executor.apply(SendMessage.builder()
                 .text(message.text())
                 .replyMarkup(message.keyboard())
                 .chatId(id)

@@ -2,17 +2,16 @@ package link.buzalex.api;
 
 import link.buzalex.models.BotMessageReply;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.function.Function;
 
 public interface BotApiService {
-    SendMessage sendToUser(BotMessageReply message, Long id);
+    Message sendToUser(BotMessageReply message, Long id);
 
-    SendMessage sendToUser(String message, Long id, String parseMode);
+    Message sendToUser(String message, Long id, String parseMode);
 
-    EditMessageText editMessage(Long chatId, Integer messageId, String newText, String parseMode);
+    Message editMessage(Long chatId, Integer messageId, String newText, String parseMode);
 
     void setExecutor(Function<? super BotApiMethod, Object> consumer);
 
