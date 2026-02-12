@@ -10,6 +10,8 @@ public interface BotApiService {
 
     void sendToUser(String message, Long id, String parseMode);
 
+    void editMessage(Long chatId, Integer messageId, String newText, String parseMode);
+
     void setExecutor(Consumer<? super BotApiMethod> consumer);
 
     void clear(int messageId, Long chatId);

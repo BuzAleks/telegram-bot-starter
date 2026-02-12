@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 
 import java.util.function.Consumer;
 
@@ -28,6 +29,15 @@ public class BotApiServiceImpl implements BotApiService {
                 .build());
     }
 
+    @Override
+    public void editMessage(Long chatId, Integer messageId, String newText, String parseMode) {
+        executor.accept(EditMessageText.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .text(newText)
+                .parseMode(parseMode)
+                .build());
+    }
 
     public void execute(BotMessageReply message, Long id) {
 
