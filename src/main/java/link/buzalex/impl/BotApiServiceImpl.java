@@ -8,21 +8,21 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Component
 public class BotApiServiceImpl implements BotApiService {
-    private Consumer<? super BotApiMethod> executor;
+    private Function<? super BotApiMethod, Object> executor;
 
     @Override
-    public void sendToUser(BotMessageReply message, Long id) {
-        execute(message, id);
+    public SendMessage sendToUser(BotMessageReply message, Long id) {
+        return execute(message, id);
     }
 
     @Override
-    public void sendToUser(String message, Long id, String parseMode) {
+    public SendMessage sendToUser(String message, Long id, String parseMode) {
 
-        executor.accept(SendMessage.builder()
+        return  (SendMessage) executor.apply(SendMessage.builder()
                 .text(message)
                 .chatId(id)
                 .parseMode(parseMode)
@@ -31,7 +31,7 @@ public class BotApiServiceImpl implements BotApiService {
 
     @Override
     public void editMessage(Long chatId, Integer messageId, String newText, String parseMode) {
-        executor.accept(EditMessageText.builder()
+        executor.apply(EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId)
                 .text(newText)
@@ -39,22 +39,23 @@ public class BotApiServiceImpl implements BotApiService {
                 .build());
     }
 
-    public void execute(BotMessageReply message, Long id) {
+    @Override
+    public void setExecutor(Function<? super BotApiMethod, Object> consumer) {
+        this.executor = consumer;
+    }
 
-        executor.accept(SendMessage.builder()
+    public SendMessage execute(BotMessageReply message, Long id) {
+
+        return (SendMessage) executor.apply(SendMessage.builder()
                 .text(message.text())
                 .replyMarkup(message.keyboard())
                 .chatId(id)
                 .build());
     }
 
-    public void setExecutor(Consumer<? super BotApiMethod> consumer) {
-        this.executor = consumer;
-    }
-
     @Override
     public void clear(int messageId, Long chatId) {
-        executor.accept(DeleteMessage.builder()
+        executor.apply(DeleteMessage.builder()
                 .chatId(chatId)
                 .messageId(messageId)
                 .build());

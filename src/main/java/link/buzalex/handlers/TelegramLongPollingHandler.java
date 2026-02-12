@@ -39,7 +39,7 @@ public class TelegramLongPollingHandler extends TelegramLongPollingBot {
         this.properties = properties;
         apiService.setExecutor(method -> {
             try {
-                executeAsync(method);
+                return execute(method);
             } catch (TelegramApiException e) {
                 throw new BotApiServiceException("Exception while sending message to user", e);
             }

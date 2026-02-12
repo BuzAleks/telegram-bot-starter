@@ -40,7 +40,7 @@ public class TelegramWebhookHandler extends TelegramWebhookBot {
         this.properties = properties;
         apiService.setExecutor(method -> {
             try {
-                executeAsync(method);
+                return executeAsync(method);
             } catch (TelegramApiException e) {
                 throw new BotApiServiceException("Exception while sending message to user", e);
             }
